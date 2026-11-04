@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from collections.abc import Sequence
 from functools import cached_property, lru_cache
 
 import mne
@@ -264,13 +265,20 @@ class Dataset:
         baseline: tuple[float | None, float | None] | None = None,
         on_duplicate: str = "error",
         duplicate_gap_s: float = DEFAULT_DUPLICATE_GAP_S,
+        exclude_channels: Sequence[str] = (),
     ) -> mne.Epochs:
         """Cut epochs around each TMS pulse.
 
         ``on_duplicate="error"`` (the default) refuses to continue if any markers are closer than
-        ``duplicate_gap_s``. ``"keep_first"`` keeps the first marker of each group. Either way the
-        choice and what it removed are recorded in ``epochs.info["description"]`` as JSON, and
-        each epoch's source marker is in ``epochs.metadata``. No baseline is applied unless asked.
+        ``duplicate_gap_s``. ``"keep_first"`` keeps the first marker of each group.
+
+        Channels are only removed if named in ``exclude_channels``. Most recordings have a flat
+        ``TRIGGER`` channel typed as EEG, so pass ``exclude_channels=("TRIGGER",)`` before average
+        referencing. Names that a recording does not have are ignored.
+
+        These choices, and what they removed, are recorded in ``epochs.info["description"]`` as
+        JSON, and each epoch's source marker is in ``epochs.metadata``. No baseline is applied
+        unless asked.
         """
         if on_duplicate not in {"error", "keep_first"}:
             raise ValueError("on_duplicate must be 'error' or 'keep_first'")
@@ -305,6 +313,9 @@ class Dataset:
             preload=True,
             verbose="ERROR",
         )
+        excluded = [name for name in exclude_channels if name in epochs.ch_names]
+        if excluded:
+            epochs.drop_channels(excluded)
         epochs.info["description"] = json.dumps(
             {
                 "source": self._stem(subject, "tmseeg", acquisition),
@@ -312,6 +323,8 @@ class Dataset:
                 "duplicate_gap_s": duplicate_gap_s,
                 "markers_in_events_tsv": len(pulses),
                 "duplicates_removed": duplicates,
+                "longest_duplicate_group_s": round(_longest_group_s(pulses), 4),
+                "channels_excluded": excluded,
                 "epochs_lost_at_recording_edges": len(kept) - len(epochs),
                 "tmin": tmin,
                 "tmax": tmax,
@@ -325,6 +338,13 @@ def _pulse_count(events: pd.DataFrame | None) -> int | None:
     if events is None or PULSE_COLUMN not in events:
         return None
     return int((events[PULSE_COLUMN] == 1).sum())
+
+
+def _longest_group_s(pulses: pd.DataFrame) -> float:
+    """Longest time spanned by one group of duplicate markers."""
+    groups = (~pulses["is_duplicate"]).cumsum()
+    spans = pulses.groupby(groups)["onset"].agg(lambda onsets: onsets.max() - onsets.min())
+    return float(spans.max())
 
 
 def flag_duplicates(pulses: pd.DataFrame, rate: float, gap_s: float) -> pd.DataFrame:

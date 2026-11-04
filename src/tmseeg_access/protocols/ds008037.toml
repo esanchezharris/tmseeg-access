@@ -1,0 +1,46 @@
+# Expected values for ds008037, each with where it came from. The checks compare the data against
+# these. Published protocol values and values observed in this release are kept apart on purpose:
+# when they disagree, that disagreement is a finding, not something to tune away.
+
+[dataset]
+name = "ds008037"
+version = "1.0.1"
+sites = ["control", "parietal", "prefrontal", "premotor"]
+task = "tmseeg"
+
+[published]
+source = "Biabani et al. 2026 preprint, doi:10.64898/2026.07.12.738085"
+pulses_per_run = 120
+gap_min_s = 4.0
+gap_max_s = 6.0
+artifact_window_ms = [-1, 5]
+channels = 62
+shared_sampling_rate_hz = 1000
+
+[observed]
+source = "results/pulse_identification.json: central band of all marker gaps in this release"
+gap_min_s = 2.5
+gap_max_s = 3.6
+
+[thresholds]
+# Markers closer than this are treated as one pulse recorded twice. No gaps fall between 1 and 2 ms.
+duplicate_gap_s = 0.002
+# A group of near-identical markers lasting longer than this is a stream, not one doubled pulse.
+burst_span_s = 0.01
+# Worth reporting at all: a sidecar duration this far from the header.
+duration_tolerance_s = 0.002
+# A sample-column value this far from onset is reported. Allows for the 1-based offset and rounding.
+sample_tolerance = 1
+# A channel whose standard deviation is below this is flat.
+flat_channel_uv = 0.1
+# This many identical consecutive samples at a channel's extreme value counts as clipped.
+saturated_run_samples = 20
+# Roughness around the pulse, relative to before it, that counts as a disturbance.
+smoother_below = 0.8
+rougher_above = 1.25
+# A shorter stretch of roughness is treated as noise.
+min_rough_span_ms = 5
+# Median deviation at or above this makes a residual artifact an error, not a warning.
+artifact_error_uv = 1000
+baseline_offsets_ms = [-18, -8]
+window_offsets_ms = [-20, 40]

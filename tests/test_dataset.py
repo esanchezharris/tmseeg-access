@@ -150,6 +150,13 @@ def test_keep_first_is_explicit_and_recorded(ds):
     assert record["duplicates_removed"] == 2
 
 
+def test_channels_are_kept_unless_excluded_and_exclusions_are_recorded(ds):
+    assert "Oz" in ds.epochs_around_pulses("sub-901", "parietal").ch_names
+    epochs = ds.epochs_around_pulses("sub-901", "parietal", exclude_channels=("Oz", "NOT_THERE"))
+    assert "Oz" not in epochs.ch_names
+    assert json.loads(epochs.info["description"])["channels_excluded"] == ["Oz"]
+
+
 def test_bad_duplicate_policy_is_rejected(ds):
     with pytest.raises(ValueError, match="on_duplicate"):
         ds.epochs_around_pulses("sub-901", "control", on_duplicate="ignore")

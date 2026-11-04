@@ -153,6 +153,16 @@ def build_catalog(ds: Dataset, path: Path | None = None, tag: str = TAG) -> dict
     }
 
 
+def store_issues(path: Path, issues: pd.DataFrame) -> None:
+    """Save quality check results in the catalog, so they can be joined to recordings."""
+    con = duckdb.connect(str(path))
+    try:
+        con.register("frame", issues.astype(object).where(issues.notna(), None))
+        con.execute("CREATE OR REPLACE TABLE issues AS SELECT * FROM frame")
+    finally:
+        con.close()
+
+
 def query(path: Path, sql: str) -> pd.DataFrame:
     """Run read-only SQL against a catalog."""
     con = duckdb.connect(str(path), read_only=True)
