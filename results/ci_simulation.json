@@ -1,15 +1,15 @@
 {
-  "commit": "a852c49",
+  "commit": "34d3ee4",
   "platform": "Windows-11-10.0.26200-SP0",
   "is_a_github_run": false,
   "steps": {
     "install": {
       "exit_code": 0,
-      "seconds": 4.5
+      "seconds": 5.4
     },
     "lint": {
       "exit_code": 0,
-      "seconds": 0.3
+      "seconds": 0.2
     },
     "format": {
       "exit_code": 0,
@@ -17,11 +17,11 @@
     },
     "tests": {
       "exit_code": 0,
-      "seconds": 8.1
+      "seconds": 8.2
     }
   },
-  "total_seconds": 13.0,
-  "pytest_summary": "199 passed, 4 skipped in 5.85s",
-  "passed": 199,
+  "total_seconds": 14.0,
+  "pytest_summary": "206 passed, 4 skipped in 6.07s",
+  "passed": 206,
   "skipped": 4
 }
