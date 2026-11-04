@@ -97,9 +97,12 @@ def _longest_span(offsets: np.ndarray) -> tuple[int, int] | None:
 def measure_pulse_artifact(data_uv: np.ndarray, samples: np.ndarray, protocol: dict) -> dict:
     """Measure how the signal departs from its pre-pulse character around the markers.
 
-    Two measures, medians across pulses and channels. Roughness (absolute second difference)
-    shows where the signal's character changes, including the smoothing interpolation leaves.
-    Deviation (distance from the mean of the pre-pulse window) gives the size in microvolts.
+    Roughness (absolute second difference) shows where the signal's character changes, including
+    the smoothing interpolation leaves. Deviation (distance from the mean of the pre-pulse window)
+    gives the size on each channel, in the recorded reference. Field power (the spread across
+    channels of the averaged response) leaves out whatever all channels share, so a large deviation
+    with small field power is mostly common to every channel. Roughness and deviation are medians
+    across pulses and channels.
     """
     thresholds = protocol["thresholds"]
     first, last = thresholds["window_offsets_ms"]
@@ -116,6 +119,7 @@ def measure_pulse_artifact(data_uv: np.ndarray, samples: np.ndarray, protocol: d
 
     before = stack[:, :, (window >= low) & (window <= high)].mean(axis=2, keepdims=True)
     deviation = np.median(np.abs(stack - before), axis=(0, 1))[1:-1]
+    field_power = (stack - before).mean(axis=0).std(axis=0)[1:-1]
 
     start, stop = protocol["published"]["artifact_window_ms"]
     smooth = offsets[ratio < thresholds["smoother_below"]]
@@ -126,6 +130,7 @@ def measure_pulse_artifact(data_uv: np.ndarray, samples: np.ndarray, protocol: d
         "peak_roughness_ratio": round(float(ratio.max()), 1),
         "peak_deviation_uv": round(float(deviation.max()), 1),
         "peak_deviation_at_ms": int(offsets[np.argmax(deviation)]),
+        "peak_field_power_uv": round(float(field_power.max()), 1),
         "rough_from_ms": span[0] if span else None,
         "rough_to_ms": span[1] if span else None,
         "smooth_offsets_in_window": int(((smooth >= start) & (smooth <= stop)).sum()),
@@ -153,7 +158,9 @@ def check_pulse_artifact(
                 "error" if peak >= thresholds["artifact_error_uv"] else "warning",
                 f"{measured['rough_from_ms']} to {measured['rough_to_ms']} ms around pulses",
                 f"median deviation peaks at {peak} uV, {measured['peak_deviation_at_ms']} ms "
-                f"after the marker; {measured['smooth_offsets_in_window']} of "
+                f"after the marker; field power peaks at "
+                f"{measured.get('peak_field_power_uv', 'n/a')} uV; "
+                f"{measured['smooth_offsets_in_window']} of "
                 f"{stop - start + 1} window samples look interpolated"
                 + ("; the header records interpolation" if header_says_interpolated else ""),
                 f"interpolated from {start} to {stop} ms, with no large deviation",

@@ -9,9 +9,9 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 import pytest
-from conftest import CHANNELS, write_recording
 from scipy.io import loadmat, savemat
 
+from conftest import CHANNELS, write_recording
 from tmseeg_access.dataset import Dataset
 from tmseeg_access.deidentify import (
     LOG_NAME,
@@ -173,7 +173,8 @@ def test_log_has_counts_but_never_the_removed_values(source, output):
     text = (output / LOG_NAME).read_text(encoding="utf-8")
     assert "synthetic.person" not in text
     assert "Fake Street" not in text
-    assert log["fields_changed"]["header.comments"] == 1
+    assert log["fields_changed"]["header.comments"] == 3  # one per .set file
+    assert log["date_shift_key"] == "supplied by caller, not stored"
     assert "not a certification" in log["certification"].lower()
     assert log["headers_with_suspicious_text_after"] == {}
 
@@ -181,3 +182,7 @@ def test_log_has_counts_but_never_the_removed_values(source, output):
 def test_generated_recordings_still_work_for_write_recording(tmp_path):
     write_recording(tmp_path, "sub-900_task-tmseeg_acq-control", [1.0], "control", seconds=3.0)
     assert (tmp_path / "sub-900_task-tmseeg_acq-control_eeg.fdt").exists()
+
+
+def test_log_says_when_the_key_was_random(source, output):
+    assert deidentify(source, output)["date_shift_key"] == "random, discarded"

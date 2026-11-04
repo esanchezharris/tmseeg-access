@@ -1,0 +1,23 @@
+{
+  "verified_in_matlab": false,
+  "epochs_shape": [
+    120,
+    62,
+    601
+  ],
+  "mat": {
+    "max_abs_difference_uv": 0.0,
+    "channels_match": true,
+    "epoch_table_rows": 120,
+    "file_bytes": 29132172
+  },
+  "set": {
+    "max_abs_difference_uv": 1.5258789023975261e-05,
+    "channels_match": true,
+    "file_bytes": 18007728
+  },
+  "metadata": {
+    "rows": 717,
+    "columns": 21
+  }
+}

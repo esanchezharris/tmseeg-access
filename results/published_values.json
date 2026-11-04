@@ -1,0 +1,20 @@
+{
+  "note": "Values quoted from published sources, written by hand. These are claims made by the sources, not measurements made by this project.",
+  "biabani_preprint": {
+    "source": "doi:10.64898/2026.07.12.738085",
+    "pulses_per_block": 120,
+    "inter_pulse_interval_s": [4, 6],
+    "subjects_at_100_percent_rmtadj": 94,
+    "subjects_at_120_percent_rmtadj": 29,
+    "acquired_sampling_rate_hz": 10000,
+    "shared_sampling_rate_hz": 1000,
+    "interpolated_window_ms": [-1, 5],
+    "channels": 62
+  },
+  "solomon_preprint": {
+    "source": "doi:10.64898/2026.09.15.26363149",
+    "patients_with_intracranial_itbs": 20,
+    "patients_with_tms_itbs": 3,
+    "itbs_pattern": "50 Hz triplets delivered in 5 Hz bursts"
+  }
+}

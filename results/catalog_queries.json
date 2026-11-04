@@ -1,0 +1,47 @@
+{
+  "queries": [
+    {
+      "question": "How many runs does each site have, and how many depart from 120 markers?",
+      "rows": 4,
+      "median_ms": 18.0
+    },
+    {
+      "question": "Which subjects are missing a TMS run?",
+      "rows": 6,
+      "median_ms": 21.3
+    },
+    {
+      "question": "Which runs have the most suspected duplicate markers?",
+      "rows": 5,
+      "median_ms": 19.8
+    },
+    {
+      "question": "What is the longest gap between pulses in each of the worst runs?",
+      "rows": 5,
+      "median_ms": 19.3
+    },
+    {
+      "question": "Which problems does one subject have?",
+      "rows": 6,
+      "median_ms": 16.5
+    },
+    {
+      "question": "How many runs have no error-level issue, by site?",
+      "rows": 4,
+      "median_ms": 16.7
+    },
+    {
+      "question": "Which runs can I use for a parietal analysis, with age and n-back accuracy?",
+      "rows": 5,
+      "median_ms": 19.5
+    },
+    {
+      "question": "How much of the release is on this machine?",
+      "rows": 2,
+      "median_ms": 15.6
+    }
+  ],
+  "repeats_each": 7,
+  "slowest_median_ms": 21.3,
+  "note": "Each timing includes opening the catalog file, read from the E: drive."
+}

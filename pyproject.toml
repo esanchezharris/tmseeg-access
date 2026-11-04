@@ -21,7 +21,14 @@ dependencies = [
 tmseeg-access = "tmseeg_access.cli:main"
 
 [dependency-groups]
-dev = ["nbclient>=0.10", "ipykernel>=6.29", "nbformat>=5.10", "pytest>=8.3", "ruff>=0.6"]
+dev = [
+    "nbclient>=0.10",
+    "ipykernel>=6.29",
+    "nbformat>=5.10",
+    "pytest>=8.3",
+    "ruff>=0.6",
+    "tabulate>=0.10.0",
+]
 
 [build-system]
 requires = ["hatchling"]

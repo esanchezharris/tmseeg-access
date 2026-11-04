@@ -195,6 +195,7 @@ def deidentify(
     """
     source, output = Path(source), Path(output)
     _check_locations(source, output)
+    key_note = "supplied by caller, not stored" if key else "random, discarded"
     key = key or secrets.token_bytes(32)
     chosen = set(subjects) if subjects is not None else None
     counts: Counter = Counter()
@@ -249,7 +250,7 @@ def deidentify(
         "signal_files_changed": changed,
         "headers_with_suspicious_text_after": {k: v for k, v in residual_headers.items() if v},
         "text_files_with_suspicious_text_after": sorted(residual_text),
-        "key": "supplied by caller, not stored" if key else "random, discarded",
+        "date_shift_key": key_note,
     }
     (output / LOG_NAME).write_text(json.dumps(log, indent=2) + "\n", encoding="utf-8")
     return log
