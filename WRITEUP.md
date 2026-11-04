@@ -14,7 +14,8 @@ issue, a de-identification step, MATLAB export, and an HTML report.
 - **Keep sources apart.** Sidecar, header and signal values stay in separate columns, because comparing
   them is the point. Published and observed protocol values are stored separately too.
 - **Verify, don't assume.** Downloads are checked against release hashes, and one script regenerates all
-  the evidence. The numbers in the docs trace to saved files, and an independent audit checked them.
+  the evidence. The numbers in the docs trace to saved files. An independent audit of an earlier draft
+  found errors, which were corrected and the results rebuilt.
 
 **What the checks found.** There are 250 issues from 19 rules. The headlines:
 - 243,139 of 301,143 markers are duplicates under 2 ms from the previous one. 240,801 are in one run,
