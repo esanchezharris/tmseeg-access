@@ -42,11 +42,11 @@ def main() -> None:
         ),
         "tmseeg_runs_by_marker_count_top": rows(
             "SELECT pulse_count AS markers, count(*) AS runs FROM recordings "
-            "WHERE task = 'tmseeg' GROUP BY 1 ORDER BY 2 DESC LIMIT 6"
+            "WHERE task = 'tmseeg' GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 6"
         ),
         "largest_marker_count_runs": rows(
             "SELECT recording_id, pulse_count AS markers FROM recordings "
-            "WHERE task = 'tmseeg' ORDER BY pulse_count DESC LIMIT 3"
+            "WHERE task = 'tmseeg' ORDER BY pulse_count DESC, recording_id LIMIT 3"
         ),
         "release_files": rows(
             "SELECT local, count(*) AS files, sum(size_bytes)::BIGINT AS bytes "

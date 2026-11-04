@@ -14,6 +14,7 @@ pulses_per_run = 120
 gap_min_s = 4.0
 gap_max_s = 6.0
 artifact_window_ms = [-1, 5]
+online_reference = "FPz"
 channels = 62
 shared_sampling_rate_hz = 1000
 
@@ -42,12 +43,16 @@ sample_tolerance = 1
 flat_channel_uv = 0.1
 # This many identical consecutive samples at a channel's extreme value counts as clipped.
 saturated_run_samples = 20
+# A stretch this long, where this share of channels stay unchanged, counts as frozen. It is longer
+# than the 6 ms interpolated around each pulse.
+frozen_min_samples = 50
+frozen_channel_fraction = 0.9
 # Roughness around the pulse, relative to before it, that counts as a disturbance.
 smoother_below = 0.8
 rougher_above = 1.25
 # A shorter stretch of roughness is treated as noise.
 min_rough_span_ms = 5
-# Median deviation at or above this makes a residual artifact an error, not a warning.
+# The larger of median deviation and peak channel, at or above this, makes it an error, not a warning.
 artifact_error_uv = 1000
 baseline_offsets_ms = [-18, -8]
 window_offsets_ms = [-20, 40]

@@ -14,7 +14,8 @@
   "set": {
     "max_abs_difference_uv": 1.5258789023975261e-05,
     "channels_match": true,
-    "file_bytes": 18007728
+    "events": 120,
+    "file_bytes": 17999104
   },
   "metadata": {
     "rows": 717,

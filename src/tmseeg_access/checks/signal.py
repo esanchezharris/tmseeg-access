@@ -73,6 +73,38 @@ def check_channels(
     return issues
 
 
+def check_frozen_signal(
+    data_uv: np.ndarray, labels: list[str], protocol: dict, subject: str, recording_id: str
+) -> list[Issue]:
+    """Report stretches where nearly every channel stops changing at the same moment.
+
+    Saturation looks for a channel stuck at its extreme. This finds signal held at any value, which
+    no amplifier or brain produces across a whole cap.
+    """
+    thresholds = protocol["thresholds"]
+    eeg = data_uv[[i for i, name in enumerate(labels) if name != TRIGGER]]
+    frozen = (np.diff(eeg, axis=1) == 0).mean(axis=0) >= thresholds["frozen_channel_fraction"]
+    edges = np.flatnonzero(np.diff(np.concatenate(([0], frozen.astype(int), [0]))))
+    lengths = edges[1::2] - edges[::2]
+    long_enough = lengths[lengths >= thresholds["frozen_min_samples"]]
+    if len(long_enough) == 0:
+        return []
+    count = f"{len(long_enough)} stretch" + ("es" if len(long_enough) > 1 else "")
+    return [
+        Issue(
+            "signal.frozen_signal",
+            "error",
+            "most channels at once",
+            f"{count} with most channels unchanged: {int(long_enough.sum())} samples in all, "
+            f"longest {int(long_enough.max())}",
+            f"none of {thresholds['frozen_min_samples']} samples or more",
+            "Don't analyse these stretches. Epochs that touch them hold no real signal.",
+            subject,
+            recording_id,
+        )
+    ]
+
+
 def check_reference_channel(
     data_uv: np.ndarray,
     names: list[str],

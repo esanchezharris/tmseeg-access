@@ -17,7 +17,7 @@
       "sub-147"
     ]
   },
-  "issues_total": 250,
+  "issues_total": 301,
   "issues_by_rule": {
     "channels.inconsistent": 1,
     "channels.name_spelling": 1,
@@ -33,15 +33,18 @@
     "pulse.gap_long": 24,
     "pulse.gap_short": 5,
     "pulse.marker_burst": 1,
+    "pulse.mixed_marker_codes": 49,
     "recording.missing": 6,
     "sidecar.dangling_reference": 1,
+    "sidecar.reference_differs_from_published": 1,
+    "signal.frozen_signal": 1,
     "signal.reference_channel_active": 40,
     "signal.residual_pulse_artifact": 20,
     "signal.trigger_not_flat": 1
   },
   "issues_by_severity": {
-    "error": 73,
+    "error": 74,
     "info": 33,
-    "warning": 144
+    "warning": 194
   }
 }

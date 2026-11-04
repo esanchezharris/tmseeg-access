@@ -15,7 +15,7 @@ from tmseeg_access.dataset import PULSE_COLUMN, Dataset
 
 
 def _read_header(path) -> dict:
-    fields = ["nbchan", "pnts", "srate", "chanlocs", "event", "comments", "tmscut"]
+    fields = ["nbchan", "pnts", "srate", "chanlocs", "event", "urevent", "comments", "tmscut"]
     header = read_mat(str(path), variable_names=fields)
     locations = header["chanlocs"]
     events = header["event"]
@@ -29,7 +29,17 @@ def _read_header(path) -> dict:
         "srate": header["srate"],
         "labels": list(np.atleast_1d(locations["labels"])),
         "n_events": np.size(latency),
+        "marker_codes": _marker_codes(events, header.get("urevent")),
     }
+
+
+def _marker_codes(events, original_events) -> list[str]:
+    """Each marker's original trigger code. Later processing renames ``event.type``, not these."""
+    if not isinstance(events, dict) or not isinstance(original_events, dict):
+        return []
+    positions = np.atleast_1d(events.get("urevent", [])).astype(int)
+    types = np.atleast_1d(original_events.get("type", [])).tolist()
+    return [str(types[position - 1]) for position in positions if 0 < position <= len(types)]
 
 
 def run_all(ds: Dataset, protocol: dict | None = None) -> tuple[pd.DataFrame, dict]:
@@ -47,6 +57,7 @@ def run_all(ds: Dataset, protocol: dict | None = None) -> tuple[pd.DataFrame, di
     issues += consistency.check_participants(ds._participants, ds.recordings())
     issues += sidecars.check_dangling_references(ds.root)
     issues += sidecars.check_dataset_type(ds.root)
+    issues += sidecars.check_published_reference(ds.root, protocol)
     issues += sidecars.check_stimulation_dose(list(ds._participants.columns), ds.root)
 
     all_gaps = []
@@ -87,12 +98,18 @@ def run_all(ds: Dataset, protocol: dict | None = None) -> tuple[pd.DataFrame, di
                 header["artifact_record"],
                 protocol,
             )
+            issues += timing.check_marker_codes(
+                header["marker_codes"], row.subject, row.recording_id
+            )
             headers_checked += 1
 
         if row.has_signal:
             raw = ds.load_raw(row.subject, task=task, acquisition=row.acquisition)
             data, labels = raw.get_data() * 1e6, raw.ch_names
             issues += signal.check_channels(data, labels, protocol, row.subject, row.recording_id)
+            issues += signal.check_frozen_signal(
+                data, labels, protocol, row.subject, row.recording_id
+            )
             flagged = ds.pulses(row.subject, row.acquisition, task=task)
             samples = flagged.loc[~flagged["is_duplicate"], "onset_sample"].to_numpy()
             samples = samples[samples < data.shape[1]]

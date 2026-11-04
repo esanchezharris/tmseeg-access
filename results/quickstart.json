@@ -15,8 +15,8 @@
     "nback_accuracy": 0.9538461538461539
   },
   "load_raw_ms": {
-    "first": 107.7,
-    "repeat": 0.88
+    "first": 143.2,
+    "repeat": 0.93
   },
   "raw": {
     "channels": 62,
@@ -37,8 +37,8 @@
       62,
       601
     ],
-    "first_ms": 238.2,
-    "repeat_ms": 26.6,
+    "first_ms": 269.4,
+    "repeat_ms": 27.5,
     "provenance": {
       "source": "sub-001_task-tmseeg_acq-parietal",
       "on_duplicate": "error",
@@ -83,5 +83,5 @@
       "runs_not_120": 22
     }
   ],
-  "catalog_query_median_ms": 18.02
+  "catalog_query_median_ms": 19.45
 }

@@ -1,5 +1,5 @@
 {
-  "note": "Values quoted from published sources, written by hand. These are claims made by the sources, not measurements made by this project.",
+  "note": "Values quoted from published sources, written by hand and rechecked against the full text on 2026-11-03. These are claims made by the sources, not measurements made by this project. Each quote is under 15 words.",
   "biabani_preprint": {
     "source": "doi:10.64898/2026.07.12.738085",
     "pulses_per_block": 120,
@@ -9,12 +9,36 @@
     "acquired_sampling_rate_hz": 10000,
     "shared_sampling_rate_hz": 1000,
     "interpolated_window_ms": [-1, 5],
-    "channels": 62
+    "channels": 62,
+    "online_reference": "FPz",
+    "ground": "AFz",
+    "released_data": "partially pre-processed",
+    "control_site": "left acromioclavicular joint over the shoulder",
+    "quotes": {
+      "Methods, Session 2, TMS": "120 pulses were delivered with 4 - 6s jittered inter-pulse intervals per block",
+      "Methods, EEG": "EEG recordings were online-referenced to FPz and grounded to AFz",
+      "Methods, EEG pre-processing": "Prior to public release, EEG data were partially pre-processed",
+      "Methods, EEG pre-processing, window": "the TMS pulse artefact was removed (-1 to 5 ms)",
+      "Technical Validation, TMS-EEG data quality": "removal of the TMS pulse artefact (-2 to 15 ms)"
+    },
+    "reading_notes": "The -2 to 15 ms window belongs to the paper's own quality-check pipeline, applied after release, not to the released files. Re-referencing is not among the listed pre-release steps, and the paper's quality checks re-reference to the common average."
   },
   "solomon_preprint": {
     "source": "doi:10.64898/2026.09.15.26363149",
     "patients_with_intracranial_itbs": 20,
     "patients_with_tms_itbs": 3,
-    "itbs_pattern": "50 Hz triplets delivered in 5 Hz bursts"
+    "recording": "stereo-EEG, neurosurgical patients",
+    "itbs_pattern": "50 Hz triplets delivered in 5 Hz bursts",
+    "quotes": {
+      "Abstract": "we recruited 20 neurosurgical patients to undergo sessions of intracranial iTBS",
+      "Data Availability": "Upon publication, raw deidentified data will be made available"
+    }
+  },
+  "lab_code": {
+    "source": "github.com/PrecisionNeuroLab/Analysis-Physiology at commit e794b7b86d6afd107b7480a0aa80d576de268b7e",
+    "languages": ["MATLAB", "Jupyter Notebook"],
+    "input_format": "BrainVision .vhdr",
+    "pulse_marker": "R  1",
+    "skip_list": "Physiology_PerBlk_PreprocessTMSEEG.m lines 41-42: blocks commented as missing pulse events"
   }
 }

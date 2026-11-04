@@ -1,7 +1,7 @@
 """Measure the MATLAB export round trip on real data. Writes results/matlab_roundtrip.json.
 
-Files are read back in Python. MATLAB itself was not available, so opening them in MATLAB or EEGLAB
-is still unverified.
+Files are read back in Python. scripts/octave_roundtrip.py opens them in Octave and EEGLAB. MATLAB
+itself was not available.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ from pathlib import Path
 
 import mne
 import numpy as np
+from scipy.io import loadmat
 
 from tmseeg_access.config import derivatives_dir
 from tmseeg_access.dataset import Dataset
@@ -51,6 +52,7 @@ def main() -> None:
         "set": {
             "max_abs_difference_uv": float(np.abs(from_set.get_data() - original).max() * 1e6),
             "channels_match": from_set.ch_names == epochs.ch_names,
+            "events": len(loadmat(set_path, squeeze_me=True)["event"]),
             "file_bytes": set_path.stat().st_size,
         },
         "metadata": {"rows": len(back), "columns": len(back.columns)},

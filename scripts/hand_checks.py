@@ -15,6 +15,9 @@ import pandas as pd
 from pymatreader import read_mat
 
 from tmseeg_access.catalog import default_path, query
+from tmseeg_access.checks import signal
+from tmseeg_access.checks.issues import load_protocol
+from tmseeg_access.checks.run import _read_header
 from tmseeg_access.dataset import Dataset
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -139,6 +142,66 @@ def average_reference_effect(ds: Dataset, artifact: pd.DataFrame) -> list[dict]:
     return sorted(rows, key=lambda r: r["shrank_by"], reverse=True)
 
 
+def spacing_variants(catalog: Path) -> list[dict]:
+    """Count gaps in the published range under each reasonable way of handling duplicates."""
+    pulses = query(
+        catalog,
+        "SELECT recording_id, onset_s, gap_from_previous_s AS gap, is_duplicate FROM pulses "
+        "ORDER BY recording_id, pulse_index",
+    )
+    kept = pulses.loc[~pulses["is_duplicate"]]
+    between_kept = kept.groupby("recording_id")["onset_s"].diff().dropna()
+    with_duplicates = pulses.loc[pulses["is_duplicate"], "recording_id"].unique()
+    untouched = kept.loc[~kept["recording_id"].isin(with_duplicates)]
+    variants = {
+        "all gaps of 2 ms or more (rule protocol.spacing)": pulses["gap"]
+        .dropna()
+        .loc[lambda gaps: gaps >= 0.002],
+        "between markers kept by keep_first": between_kept,
+        "only runs with no suspected duplicates": untouched.groupby("recording_id")["onset_s"]
+        .diff()
+        .dropna(),
+    }
+    return [
+        {
+            "method": name,
+            "gaps": len(gaps),
+            "median_s": round(float(gaps.median()), 4),
+            "in_published_range": int(gaps.between(4, 6).sum()),
+        }
+        for name, gaps in variants.items()
+    ]
+
+
+def sub_134_by_code(ds: Dataset) -> dict:
+    """Measure the artifact separately on code 128 and on the other codes in this mixed run."""
+    run = "sub-134_task-tmseeg_acq-parietal"
+    header = _read_header(ds.root / "sub-134" / "eeg" / f"{run}_eeg.set")
+    is_128 = np.array(header["marker_codes"]) == "128"
+    flagged = ds.pulses("sub-134", "parietal")
+    distinct = ~flagged["is_duplicate"].to_numpy()
+    samples = flagged["onset_sample"].to_numpy()
+    raw = ds.load_raw("sub-134", acquisition="parietal")
+    kept = [i for i, name in enumerate(raw.ch_names) if name != signal.TRIGGER]
+    data = raw.get_data(picks=kept) * 1e6
+    names = [raw.ch_names[i] for i in kept]
+    result = {}
+    for label, chosen in (
+        ("code_128", is_128),
+        ("other_codes", ~is_128),
+        ("all", is_128 | ~is_128),
+    ):
+        use = samples[chosen & distinct]
+        measured = signal.measure_pulse_artifact(data, use, load_protocol(), names)
+        result[label] = {
+            "markers": len(use),
+            "peak_channel_uv": measured["peak_channel_uv"],
+            "peak_channel": measured["peak_channel"],
+            "smooth_offsets_in_window": measured["smooth_offsets_in_window"],
+        }
+    return result
+
+
 def main() -> None:
     ds = Dataset()
     catalog = default_path(ds.root)
@@ -191,7 +254,7 @@ def main() -> None:
             .rename("site"),
             issues.loc[issues["rule"] == "signal.residual_pulse_artifact", "severity"],
         ).to_dict(orient="index"),
-        "large_runs_with_no_interpolated_samples": int(
+        "large_runs_with_no_smooth_offset_in_window": int(
             (
                 artifact.loc[
                     (artifact["peak_channel_uv"] >= 1000) | (artifact["peak_deviation_uv"] >= 1000),
@@ -201,6 +264,8 @@ def main() -> None:
             ).sum()
         ),
         "average_reference_effect": average_reference_effect(ds, artifact),
+        "sub_134_parietal_by_trigger_code": sub_134_by_code(ds),
+        "spacing_variants": spacing_variants(catalog),
     }
     OUTPUT.write_text(json.dumps(result, indent=2, default=int) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2, default=int))

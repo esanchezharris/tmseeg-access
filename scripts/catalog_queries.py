@@ -48,7 +48,7 @@ ORDER BY tms_runs, p.subject""",
        sum(is_duplicate::INT) AS duplicates
 FROM pulses
 GROUP BY recording_id
-ORDER BY duplicates DESC
+ORDER BY duplicates DESC, recording_id
 LIMIT 5""",
     ),
     (
@@ -57,7 +57,7 @@ LIMIT 5""",
        round(max(gap_from_previous_s), 2) AS longest_gap_s
 FROM pulses
 GROUP BY recording_id
-ORDER BY longest_gap_s DESC
+ORDER BY longest_gap_s DESC, recording_id
 LIMIT 5""",
     ),
     (
@@ -69,11 +69,12 @@ ORDER BY severity, rule, recording_id
 LIMIT 6""",
     ),
     (
-        "How many runs have no error-level issue, by site?",
+        "How many runs have no error-level issue so far, and how many had their signal checked?",
         CLEAN_RUNS.strip()
         + """
 SELECT r.acquisition AS site,
-       count(*) AS runs_without_errors
+       count(*) AS runs_without_errors,
+       count(*) FILTER (r.has_signal) AS signal_checked
 FROM recordings r
 LEFT JOIN problem_runs b USING (recording_id)
 WHERE r.task = 'tmseeg' AND b.recording_id IS NULL
@@ -81,19 +82,18 @@ GROUP BY site
 ORDER BY site""",
     ),
     (
-        "Which runs can I use for a parietal analysis, with age and n-back accuracy?",
+        "Which signal-checked parietal runs with 120 markers and an n-back score have no error-level issue?",
         CLEAN_RUNS.strip()
         + """
 SELECT r.subject, p.age, p.sex,
-       round(b.nback_accuracy, 3) AS nback_accuracy,
-       r.has_signal
+       round(b.nback_accuracy, 3) AS nback_accuracy
 FROM recordings r
 JOIN participants p USING (subject)
 JOIN behavior b USING (subject)
 LEFT JOIN problem_runs x USING (recording_id)
 WHERE r.acquisition = 'parietal' AND x.recording_id IS NULL
-  AND r.pulse_count = 120 AND b.nback_accuracy IS NOT NULL
-ORDER BY r.has_signal DESC, r.subject
+  AND r.has_signal AND r.pulse_count = 120 AND b.nback_accuracy IS NOT NULL
+ORDER BY r.subject
 LIMIT 5""",
     ),
     (
@@ -132,6 +132,10 @@ def main() -> None:
         "```",
         "",
         "Tables: `recordings`, `participants`, `behavior`, `pulses`, `files`, `issues`.",
+        "",
+        "The `issues` table only holds what was checked. Signal rules can't run without the signal,",
+        "so a run with no issues and `has_signal` false has been checked for metadata only.",
+        "Dataset-wide errors have no `recording_id`, so the queries below don't count them.",
         "",
     ]
     timings = []

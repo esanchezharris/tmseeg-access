@@ -90,7 +90,7 @@
       "warning": 3
     }
   },
-  "large_runs_with_no_interpolated_samples": 10,
+  "large_runs_with_no_smooth_offset_in_window": 10,
   "average_reference_effect": [
     {
       "recording": "sub-092 prefrontal",
@@ -169,6 +169,46 @@
       "peak_channel_recorded_uv": 1135.2,
       "peak_channel_average_reference_uv": 1209.2,
       "shrank_by": 0.9
+    }
+  ],
+  "sub_134_parietal_by_trigger_code": {
+    "code_128": {
+      "markers": 120,
+      "peak_channel_uv": 2697.8,
+      "peak_channel": "PO4",
+      "smooth_offsets_in_window": 0
+    },
+    "other_codes": {
+      "markers": 278,
+      "peak_channel_uv": 107.7,
+      "peak_channel": "FP2",
+      "smooth_offsets_in_window": 7
+    },
+    "all": {
+      "markers": 398,
+      "peak_channel_uv": 814.3,
+      "peak_channel": "PO4",
+      "smooth_offsets_in_window": 3
+    }
+  },
+  "spacing_variants": [
+    {
+      "method": "all gaps of 2 ms or more (rule protocol.spacing)",
+      "gaps": 57525,
+      "median_s": 3.0234,
+      "in_published_range": 13
+    },
+    {
+      "method": "between markers kept by keep_first",
+      "gaps": 57525,
+      "median_s": 3.0235,
+      "in_published_range": 15
+    },
+    {
+      "method": "only runs with no suspected duplicates",
+      "gaps": 50064,
+      "median_s": 3.0287,
+      "in_published_range": 1
     }
   ]
 }

@@ -1,0 +1,39 @@
+{
+  "note": "Written by hand from the report of a separate review agent, which computed these from the raw files with its own code before reading the project's code. Its scripts are not kept in this repo. Item 8b's 13 was computed after reading the project's formula, so it checks arithmetic and is not independent.",
+  "date": "2026-11-03",
+  "agreed_with_project": {
+    "subjects": 123,
+    "recordings": 717,
+    "tms_runs": 479,
+    "markers": 301143,
+    "suspected_duplicates": 243139,
+    "suspected_duplicates_in_sub_071_prefrontal": 240801,
+    "other_duplicates": 2338,
+    "other_runs_with_duplicates": 57,
+    "markers_left": 58004,
+    "gaps": 57525,
+    "trigger_typed_eeg_runs": 392,
+    "runs_with_62_channels": 87,
+    "runs_with_63_channels": 392,
+    "separate_header_pattern_runs": 47,
+    "separate_header_pattern_subjects": 12,
+    "site_codes_matching": 432,
+    "sidecar_header_mismatches": 0,
+    "fcz_active_runs": 40,
+    "max_onset_error_s": 1.137e-13
+  },
+  "differed": {
+    "gaps_in_published_range_keep_first": 15,
+    "runs_at_1000_uv_on_mean_across_pulses_with_sub_134_parietal_on_code_128": 14,
+    "runs_at_1000_uv_on_any_single_pulse": 17,
+    "largest_single_pulse_uv": 144469.2,
+    "rougher_runs_of_10_confirmed_interpolated": 2,
+    "rougher_runs_of_10_partial_support": 4,
+    "rougher_runs_of_10_unresolved": 4
+  },
+  "other_observations": {
+    "sub_071_prefrontal_marker_chains": 11,
+    "sub_071_prefrontal_chain_spacing_ms": 0.1,
+    "sub_057_parietal_first_vs_second_marker_uv": [27.2, 5.4]
+  }
+}

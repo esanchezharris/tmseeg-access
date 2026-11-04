@@ -48,11 +48,14 @@ RULE_MEANINGS = {
     "header.no_artifact_record": "No record of artifact removal in the header",
     "header.site_mismatch": "Site label disagrees with the original filename",
     "metadata.no_stimulation_dose": "No stimulation intensity for any subject",
+    "pulse.mixed_marker_codes": "Pulse markers carry more than one trigger code",
+    "signal.frozen_signal": "Most channels hold their value at the same moment",
+    "sidecar.reference_differs_from_published": "Sidecars and preprint name different references",
     "participant.missing_value": "A participant field has gaps",
     "participant.no_recordings": "A listed participant has no EEG recordings",
     "participant.unlisted": "Recordings exist for an unlisted participant",
     "protocol.spacing": "Pulse spacing differs from the published protocol",
-    "pulse.count": "Distinct pulses in a run differ from 120",
+    "pulse.count": "Markers left after duplicates differ from 120",
     "pulse.duplicate": "Pulse markers under 2 ms apart",
     "pulse.gap_long": "Gaps longer than the band seen in this release",
     "pulse.gap_short": "Gaps shorter than the band seen in this release",
@@ -71,7 +74,7 @@ RULE_MEANINGS = {
     "signal.flat_channel": "A flat EEG channel",
     "signal.no_pulse_signature": "No change in the signal around markers",
     "signal.no_usable_pulses": "No marker has a complete window of signal",
-    "signal.residual_pulse_artifact": "The TMS artifact is still in the signal",
+    "signal.residual_pulse_artifact": "Disturbance around the pulse, or a very large channel",
     "signal.reference_channel_active": "The stated reference channel carries signal",
     "signal.saturated_channel": "A channel stuck at its extreme value",
     "signal.trigger_not_flat": "The trigger channel carries signal",
@@ -138,7 +141,7 @@ def marker_count_table(recordings: pd.DataFrame) -> pd.DataFrame:
 
 
 def usable_gaps(pulses: pd.DataFrame) -> np.ndarray:
-    """Gaps between distinct pulses: suspected duplicates are left out."""
+    """Gaps between markers, with suspected duplicates left out."""
     kept = pulses.loc[~pulses["is_duplicate"].astype(bool), "gap_from_previous_s"]
     return kept.dropna().to_numpy(dtype=float)
 
@@ -214,7 +217,7 @@ def chart_gaps(table: pd.DataFrame, path: Path) -> bytes:
     axes.set_xlim(0, 7)
     axes.grid(axis="y", color=GRID, linewidth=0.7)
     axes.yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter("{x:,.0f}"))
-    axes.set_xlabel("Seconds between distinct pulses", color=INK_SECONDARY, fontsize=9)
+    axes.set_xlabel("Seconds between markers, duplicates left out", color=INK_SECONDARY, fontsize=9)
     axes.set_title("Pulse spacing across all TMS runs", loc="left", color=INK, fontsize=11)
     return _finish(figure, path)
 
@@ -259,7 +262,10 @@ def chart_artifact(artifact: pd.DataFrame, path: Path) -> bytes:
         fontsize=9,
     )
     axes.set_title(
-        "Pulse artifact left in each signal-checked run", loc="left", color=INK, fontsize=11
+        "Largest channel deviation around pulses, per signal-checked run",
+        loc="left",
+        color=INK,
+        fontsize=11,
     )
     return _finish(figure, path)
 
@@ -297,7 +303,7 @@ def build_facts(inputs: Inputs) -> dict:
         "subjects": len(inputs.participants),
         "tmseeg_runs": len(tms),
         "pulse_markers": len(inputs.pulses),
-        "distinct_pulses": int((~inputs.pulses["is_duplicate"].astype(bool)).sum()),
+        "markers_after_duplicates": int((~inputs.pulses["is_duplicate"].astype(bool)).sum()),
         "duplicate_markers": int(inputs.pulses["is_duplicate"].astype(bool).sum()),
         "issues": len(inputs.issues),
         "runs_with_120_markers": int((tms["pulse_count"] == EXPECTED_PULSES).sum()),
@@ -348,7 +354,7 @@ def write_report(inputs: Inputs, output: Path) -> Path:
         (f"{facts['subjects']}", "subjects"),
         (f"{facts['tmseeg_runs']}", "TMS runs"),
         (f"{facts['pulse_markers']:,}", "pulse markers"),
-        (f"{facts['distinct_pulses']:,}", "distinct pulses"),
+        (f"{facts['markers_after_duplicates']:,}", "markers after duplicates"),
         (f"{facts['issues']}", "issues recorded"),
     ]
     tile_html = "".join(f"<div class=tile><b>{a}</b><span>{b}</span></div>" for a, b in tiles)
@@ -382,22 +388,22 @@ random sample. Do not read their rates as rates for the whole dataset.</div>
 
 <h2>Pulse counts</h2>
 <p>{facts["runs_with_120_markers"]} of {facts["tmseeg_runs"]} runs have the planned 120 markers.
-Counts near 240 are mostly markers recorded twice for one pulse.</p>
+Counts near 240 are mostly suspected doubled markers.</p>
 {_img(chart_a, "Bar chart of TMS runs grouped by how many pulse markers they contain")}
 {_table_html(counts, ("runs",))}
 
 <h2>Pulse spacing</h2>
-<p>The median gap between distinct pulses is {facts["gap_median_s"]} s. Of
+<p>Counting every gap of 2 ms or more, the median gap between markers is {facts["gap_median_s"]} s. Of
 {facts["gaps_total"]:,} gaps, {facts["gaps_in_published_range"]} fall in the published 4 to 6 s
 range. Gaps over 7 s are not drawn, but are in the data.</p>
-{_img(chart_b, "Histogram of seconds between distinct pulses, almost all below the published range")}
+{_img(chart_b, "Histogram of seconds between markers, almost all below the published range")}
 
-<h2>Pulse artifact left in the signal</h2>
+<h2>Disturbance around the pulse</h2>
 <p>{facts["signal_runs_with_residual_artifact"]} of {facts["runs_checked_signal"]} signal-checked
-runs keep a pulse artifact, and {facts["signal_runs_at_or_over_1000_uv"]} peak at 1,000 uV or more.
+runs show a pulse artifact or a very large channel, and {facts["signal_runs_at_or_over_1000_uv"]} peak at 1,000 uV or more.
 {facts["signal_runs_header_says_interpolated_but_over_1000_uv"]} of those record interpolation in
 their header, so the header alone cannot show a run is clean.</p>
-{_img(chart_d, "Dot plot of peak deviation around pulses per run, by stimulation site")}
+{_img(chart_d, "Dot plot of the largest channel deviation around pulses per run, by stimulation site")}
 <p>Peak channel is the largest deviation of any one channel's averaged response. Deviation is the
 median across channels, so it misses an artifact on a few channels. Field power counts only what
 differs between channels. All three are in the recorded reference.</p>

@@ -68,7 +68,7 @@ def test_facts_match_the_inputs(inputs, tmp_path):
     assert facts["tmseeg_runs"] == 3
     assert facts["pulse_markers"] == 26
     assert facts["duplicate_markers"] == 2
-    assert facts["distinct_pulses"] == 24
+    assert facts["markers_after_duplicates"] == 24
     assert facts["issues"] == len(inputs.issues)
 
 

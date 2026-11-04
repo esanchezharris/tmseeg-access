@@ -1,7 +1,10 @@
-"""Regenerate every saved result and generated doc, in dependency order.
+"""Regenerate the catalog, checks, report, evidence files and generated docs, in dependency order.
 
 Needs TMSEEG_DATA_ROOT and the downloaded data. Run it whenever a check changes, so that results and
-docs cannot drift apart. CI simulation runs separately, because it needs committed code.
+docs cannot drift apart. The Octave and EEGLAB step runs only if OCTAVE_CLI and EEGLAB_PATH are set.
+
+Not regenerated here: the CI simulation (needs committed code), download verification logs and drive
+status (records of past events), and published_values.json (hand-written quotes).
 """
 
 from __future__ import annotations
@@ -26,6 +29,7 @@ STEPS = [
     ("hand checks", [*SCRIPT, "scripts/hand_checks.py"], None),
     ("de-identification demo", [*SCRIPT, "scripts/deidentify_demo.py"], None),
     ("MATLAB round trip", [*SCRIPT, "scripts/matlab_roundtrip.py"], None),
+    ("Octave and EEGLAB round trip", [*SCRIPT, "scripts/octave_roundtrip.py"], None),
     ("catalog query docs", [*SCRIPT, "scripts/catalog_queries.py"], None),
     ("API docs", [*SCRIPT, "scripts/build_api_docs.py"], None),
     ("quickstart", [*SCRIPT, "examples/quickstart.py"], "quickstart_output.txt"),
@@ -38,7 +42,11 @@ STEPS = [
 def main() -> None:
     if "TMSEEG_DATA_ROOT" not in os.environ:
         sys.exit("Set TMSEEG_DATA_ROOT first.")
+    has_octave = {"OCTAVE_CLI", "EEGLAB_PATH"} <= set(os.environ)
     for name, command, capture in STEPS:
+        if name.startswith("Octave") and not has_octave:
+            print(f"{name}: skipped, OCTAVE_CLI and EEGLAB_PATH are not set")
+            continue
         started = time.perf_counter()
         done = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
         print(f"{name}: exit {done.returncode}, {time.perf_counter() - started:.1f} s")

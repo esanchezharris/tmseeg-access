@@ -1,0 +1,41 @@
+{
+  "runtime": "GNU Octave 11.3.0",
+  "verified_in_matlab": false,
+  "eeglab": "eeglab-2026.0.0",
+  "octave_exit_code": 0,
+  "steps_ok": {
+    "mat": true,
+    "metadata": true,
+    "eeglab": true
+  },
+  "errors": {},
+  "mat": {
+    "shape_match": true,
+    "channels_match": true,
+    "epoch_ids_match": true,
+    "provenance_fields": 11,
+    "times_match": true,
+    "channel_mean_max_difference_uv": 2.6645352591003757e-15,
+    "trial_mean_max_difference_uv": 2.842170943040401e-14,
+    "largest_abs_difference_uv": 0.0
+  },
+  "metadata": {
+    "columns_match": true,
+    "rows_match": true,
+    "gaps_match": true,
+    "numeric_columns": 13,
+    "struct2table_available": false
+  },
+  "eeglab_load": {
+    "shape_match": true,
+    "events": 120,
+    "one_event_per_epoch": true,
+    "events_at_time_zero": true,
+    "channels_match": true,
+    "sampling_rate_match": true,
+    "time_range_match": true,
+    "channel_mean_max_difference_uv": 1.3745270915910268e-07,
+    "resaved_max_difference_uv": 1.52587890625e-05,
+    "resaved_channels_match": true
+  }
+}

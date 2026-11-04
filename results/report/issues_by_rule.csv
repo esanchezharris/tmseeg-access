@@ -1,12 +1,14 @@
 rule,severity,issues,meaning
 pulse.duplicate,error,58,Pulse markers under 2 ms apart
-signal.residual_pulse_artifact,error,13,The TMS artifact is still in the signal
+signal.residual_pulse_artifact,error,13,"Disturbance around the pulse, or a very large channel"
 channels.trigger_typed_as_eeg,error,1,A flat trigger channel is listed as EEG
 pulse.marker_burst,error,1,A continuous stream of markers
+signal.frozen_signal,error,1,Most channels hold their value at the same moment
+pulse.mixed_marker_codes,warning,49,Pulse markers carry more than one trigger code
 header.no_artifact_record,warning,47,No record of artifact removal in the header
 signal.reference_channel_active,warning,40,The stated reference channel carries signal
-pulse.count,warning,34,Distinct pulses in a run differ from 120
-signal.residual_pulse_artifact,warning,7,The TMS artifact is still in the signal
+pulse.count,warning,34,Markers left after duplicates differ from 120
+signal.residual_pulse_artifact,warning,7,"Disturbance around the pulse, or a very large channel"
 recording.missing,warning,6,An expected TMS run is absent
 pulse.gap_short,warning,5,Gaps shorter than the band seen in this release
 channels.inconsistent,warning,1,Recordings declare different channel counts
@@ -14,6 +16,7 @@ channels.name_spelling,warning,1,The same electrode is spelled two ways
 metadata.no_stimulation_dose,warning,1,No stimulation intensity for any subject
 protocol.spacing,warning,1,Pulse spacing differs from the published protocol
 sidecar.dangling_reference,warning,1,Sidecars refer to files that do not exist
+sidecar.reference_differs_from_published,warning,1,Sidecars and preprint name different references
 pulse.gap_long,info,24,Gaps longer than the band seen in this release
 channels.names_differ,info,4,A recording has different electrodes from the rest
 participant.missing_value,info,3,A participant field has gaps

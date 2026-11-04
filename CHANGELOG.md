@@ -16,15 +16,22 @@ First version, built around OpenNeuro ds008037 v1.0.1.
 - Quality checks on pulse timing, channel and rate consistency, sidecars against headers, header
   provenance and the signal, reporting through one shared `Issue` record.
 - `deidentify` step that works on a copy, with a post-run scan and a log of counts.
-- MATLAB export to `.mat` and EEGLAB `.set`, with round-trip tests.
+- MATLAB export to `.mat` and EEGLAB `.set`, with round-trip tests and a test in GNU Octave and EEGLAB.
 - HTML report and CSVs built from saved results.
 - Tutorial notebook, API reference, example queries, and privacy and MATLAB guides.
 - GitHub Actions workflow for the synthetic tests.
-- `scripts/rebuild_evidence.py`, which regenerates every saved result and generated doc.
+- `scripts/rebuild_evidence.py`, which rebuilds the catalog, checks, report, evidence and generated docs.
+
+### Fixed before release
+
+- EEGLAB exports held false events, because raw-time annotations were read as epoch positions.
+- Added rules for mixed trigger codes, frozen signal, and a sidecar reference that differs from the
+  preprint. See [AUDIT.md](AUDIT.md).
 
 ### Known gaps
 
-- MATLAB and EEGLAB opening of exports is untested: no MATLAB was available.
-- The CI workflow has not run on GitHub. Its steps were run in a clean clone on Windows.
+- Exports were tested in GNU Octave and EEGLAB, not in MATLAB itself. `struct2table` is unrun.
+- The CI workflow has not run on GitHub. Its steps were run in a clean clone on Windows. Linux and Mac
+  are untested.
 - Stimulation dose can't be joined, because the release doesn't include it per subject.
-- Signal checks cover 10 subjects, chosen to include known problems.
+- Signal checks cover 10 subjects, chosen by hand mostly for known problems.

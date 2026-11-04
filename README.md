@@ -95,11 +95,15 @@ epochs = ds.epochs_around_pulses(
 ## Read this before analysing the data
 
 - **Check the run first.** Some runs still contain a large TMS artifact, and their headers can't tell you
-  which. Query the `issues` table.
-- **Doubled pulses stop epoching.** Some runs have markers recorded twice. `epochs_around_pulses` refuses
+  which. Query the `issues` table, but signal rules only cover runs whose signal you downloaded.
+- **Check trigger codes.** In some runs, markers flagged as pulses carry other codes. The rule
+  `pulse.mixed_marker_codes` reports the codes and counts. Per-marker codes are only in the `.set` header,
+  and all these markers are epoched.
+- **Doubled pulses stop epoching.** Some runs have suspected doubled markers. `epochs_around_pulses` refuses
   them until you pass `on_duplicate="keep_first"`, and records that choice.
-- **Exclude `TRIGGER`** from most recordings before average referencing. It's a flat channel typed as EEG.
-- **Re-reference explicitly.** The reference stated in the sidecars doesn't match the data.
+- **Exclude `TRIGGER`** from most TMS runs before average referencing. It's typed as EEG and usually flat.
+- **Re-reference explicitly.** The sidecars state FCz, the preprint states FPz, and FCz carries signal in
+  all 40 signal-checked runs.
 - **Epochs here aren't analysis-ready.** They haven't been through a full TMS-EEG cleaning pipeline.
 
 See [NOTES.md](NOTES.md) for what was found, how a pulse was identified and verified, and a plain-English
@@ -108,7 +112,7 @@ explanation of the science.
 ## Docs
 
 [Tutorial](docs/tutorial.ipynb), [API reference](docs/api.md), [catalog queries](docs/catalog_queries.md),
-[privacy](docs/privacy.md), [MATLAB](docs/matlab.md), [changelog](CHANGELOG.md).
+[privacy](docs/privacy.md), [MATLAB](docs/matlab.md), [changelog](CHANGELOG.md), [audit](AUDIT.md).
 
 ## Tests
 
@@ -119,13 +123,14 @@ uv run pytest
 Tests use small synthetic fixtures. Tests on real data skip unless `TMSEEG_DATA_ROOT` is set. CI runs
 the synthetic tests only.
 
-`scripts/rebuild_evidence.py` regenerates every saved result and generated doc from the data.
+`scripts/rebuild_evidence.py` rebuilds the catalog, checks, report, evidence files and generated docs. It
+adds the Octave and EEGLAB test when `OCTAVE_CLI` and `EEGLAB_PATH` are set.
 
 ## Limits
 
 Signal checks are only as complete as your download. A check that couldn't run is reported as coverage,
 not as a pass. The package is built for this dataset's layout, and supporting another would take a new
-protocol file and some reader changes. It was built and tested on Windows only.
+protocol file and some reader changes. It was built and tested on Windows only. The CI workflow targets Ubuntu and hasn't run yet.
 
 ## License
 

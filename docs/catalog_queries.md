@@ -20,6 +20,10 @@ uv run tmseeg-access query "SELECT count(*) FROM recordings"
 
 Tables: `recordings`, `participants`, `behavior`, `pulses`, `files`, `issues`.
 
+The `issues` table only holds what was checked. Signal rules can't run without the signal,
+so a run with no issues and `has_signal` false has been checked for metadata only.
+Dataset-wide errors have no `recording_id`, so the queries below don't count them.
+
 ## 1. How many runs does each site have, and how many depart from 120 markers?
 
 ```sql
@@ -68,17 +72,17 @@ SELECT recording_id,
        sum(is_duplicate::INT) AS duplicates
 FROM pulses
 GROUP BY recording_id
-ORDER BY duplicates DESC
+ORDER BY duplicates DESC, recording_id
 LIMIT 5
 ```
 
 | recording_id                       |   markers |   duplicates |
 |:-----------------------------------|----------:|-------------:|
 | sub-071_task-tmseeg_acq-prefrontal |    240923 |       240801 |
-| sub-137_task-tmseeg_acq-control    |       240 |          120 |
-| sub-139_task-tmseeg_acq-control    |       240 |          120 |
-| sub-137_task-tmseeg_acq-prefrontal |       240 |          120 |
-| sub-139_task-tmseeg_acq-parietal   |       240 |          120 |
+| sub-104_task-tmseeg_acq-parietal   |       240 |          120 |
+| sub-104_task-tmseeg_acq-premotor   |       240 |          120 |
+| sub-112_task-tmseeg_acq-control    |       240 |          120 |
+| sub-136_task-tmseeg_acq-control    |       240 |          120 |
 
 ## 4. What is the longest gap between pulses in each of the worst runs?
 
@@ -87,7 +91,7 @@ SELECT recording_id,
        round(max(gap_from_previous_s), 2) AS longest_gap_s
 FROM pulses
 GROUP BY recording_id
-ORDER BY longest_gap_s DESC
+ORDER BY longest_gap_s DESC, recording_id
 LIMIT 5
 ```
 
@@ -109,16 +113,16 @@ ORDER BY severity, rule, recording_id
 LIMIT 6
 ```
 
-| rule                            | severity   | recording_id                       | observed                                                                                                                                                                                                          |
-|:--------------------------------|:-----------|:-----------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| pulse.duplicate                 | error      | sub-136_task-tmseeg_acq-control    | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
-| pulse.duplicate                 | error      | sub-136_task-tmseeg_acq-parietal   | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
-| pulse.duplicate                 | error      | sub-136_task-tmseeg_acq-prefrontal | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
-| pulse.duplicate                 | error      | sub-136_task-tmseeg_acq-premotor   | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
-| signal.residual_pulse_artifact  | error      | sub-136_task-tmseeg_acq-prefrontal | median deviation peaks at 11070.9 uV, 4 ms after the marker; field power peaks at 596.3 uV; largest averaged channel AF7 at 14321.2 uV; 0 of 7 window samples look interpolated; the header records interpolation |
-| signal.reference_channel_active | warning    | sub-136_task-tmseeg_acq-control    | sidecar reference is FCz, but that channel has standard deviation 355.5 uV                                                                                                                                        |
+| rule                           | severity   | recording_id                       | observed                                                                                                                                                                                                          |
+|:-------------------------------|:-----------|:-----------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| pulse.duplicate                | error      | sub-136_task-tmseeg_acq-control    | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
+| pulse.duplicate                | error      | sub-136_task-tmseeg_acq-parietal   | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
+| pulse.duplicate                | error      | sub-136_task-tmseeg_acq-prefrontal | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
+| pulse.duplicate                | error      | sub-136_task-tmseeg_acq-premotor   | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
+| signal.residual_pulse_artifact | error      | sub-136_task-tmseeg_acq-prefrontal | median deviation peaks at 11070.9 uV, 4 ms after the marker; field power peaks at 596.3 uV; largest averaged channel AF7 at 14321.2 uV; 0 of 7 window samples look interpolated; the header records interpolation |
+| pulse.mixed_marker_codes       | warning    | sub-136_task-tmseeg_acq-control    | trigger codes in the header 191: 120, 128: 120                                                                                                                                                                    |
 
-## 6. How many runs have no error-level issue, by site?
+## 6. How many runs have no error-level issue so far, and how many had their signal checked?
 
 ```sql
 WITH problem_runs AS (
@@ -126,7 +130,8 @@ WITH problem_runs AS (
         WHERE severity = 'error' AND recording_id IS NOT NULL
     )
 SELECT r.acquisition AS site,
-       count(*) AS runs_without_errors
+       count(*) AS runs_without_errors,
+       count(*) FILTER (r.has_signal) AS signal_checked
 FROM recordings r
 LEFT JOIN problem_runs b USING (recording_id)
 WHERE r.task = 'tmseeg' AND b.recording_id IS NULL
@@ -134,14 +139,14 @@ GROUP BY site
 ORDER BY site
 ```
 
-| site       |   runs_without_errors |
-|:-----------|----------------------:|
-| control    |                   108 |
-| parietal   |                   104 |
-| prefrontal |                    99 |
-| premotor   |                   100 |
+| site       |   runs_without_errors |   signal_checked |
+|:-----------|----------------------:|-----------------:|
+| control    |                   108 |                8 |
+| parietal   |                   104 |                5 |
+| prefrontal |                    99 |                2 |
+| premotor   |                   100 |                7 |
 
-## 7. Which runs can I use for a parietal analysis, with age and n-back accuracy?
+## 7. Which signal-checked parietal runs with 120 markers and an n-back score have no error-level issue?
 
 ```sql
 WITH problem_runs AS (
@@ -149,25 +154,24 @@ WITH problem_runs AS (
         WHERE severity = 'error' AND recording_id IS NOT NULL
     )
 SELECT r.subject, p.age, p.sex,
-       round(b.nback_accuracy, 3) AS nback_accuracy,
-       r.has_signal
+       round(b.nback_accuracy, 3) AS nback_accuracy
 FROM recordings r
 JOIN participants p USING (subject)
 JOIN behavior b USING (subject)
 LEFT JOIN problem_runs x USING (recording_id)
 WHERE r.acquisition = 'parietal' AND x.recording_id IS NULL
-  AND r.pulse_count = 120 AND b.nback_accuracy IS NOT NULL
-ORDER BY r.has_signal DESC, r.subject
+  AND r.has_signal AND r.pulse_count = 120 AND b.nback_accuracy IS NOT NULL
+ORDER BY r.subject
 LIMIT 5
 ```
 
-| subject   |   age | sex    |   nback_accuracy | has_signal   |
-|:----------|------:|:-------|-----------------:|:-------------|
-| sub-001   |    22 | female |            0.954 | True         |
-| sub-029   |    21 | male   |            0.985 | True         |
-| sub-071   |    27 | male   |            0.9   | True         |
-| sub-092   |    28 | female |            0.962 | True         |
-| sub-125   |    34 | female |            0.977 | True         |
+| subject   |   age | sex    |   nback_accuracy |
+|:----------|------:|:-------|-----------------:|
+| sub-001   |    22 | female |            0.954 |
+| sub-029   |    21 | male   |            0.985 |
+| sub-071   |    27 | male   |            0.9   |
+| sub-092   |    28 | female |            0.962 |
+| sub-125   |    34 | female |            0.977 |
 
 ## 8. How much of the release is on this machine?
 

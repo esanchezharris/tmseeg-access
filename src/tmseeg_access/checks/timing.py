@@ -6,6 +6,8 @@ rows, so an out-of-order marker is seen rather than sorted away.
 
 from __future__ import annotations
 
+from collections import Counter
+
 import numpy as np
 import pandas as pd
 
@@ -83,7 +85,7 @@ def check_run(
             "pulse.count",
             "warning",
             "whole run",
-            f"{unique} distinct pulses from {len(onsets)} markers",
+            f"{unique} markers left from {len(onsets)} after removing duplicates",
             f"{expected_pulses} pulses ({published['source']})",
             "Fewer epochs than planned: check whether the run was cut short."
             if shortfall
@@ -143,6 +145,31 @@ def check_run(
                 "Use onset, and find out which column is right for these rows.",
             )
     return issues
+
+
+def check_marker_codes(codes: list[str], subject: str, recording_id: str) -> list[Issue]:
+    """Report a run whose pulse markers carry more than one original trigger code.
+
+    A second code can mean one pulse marked twice, or a marker that was never a pulse. Which one
+    needs the signal, so this only reports it.
+    """
+    counts = Counter(codes)
+    if len(counts) < 2:
+        return []
+    shown = ", ".join(f"{code}: {n}" for code, n in counts.most_common(4))
+    others = f", and {len(counts) - 4} other codes" if len(counts) > 4 else ""
+    return [
+        Issue(
+            "pulse.mixed_marker_codes",
+            "warning",
+            "events flagged is_tms_pulse",
+            f"trigger codes in the header {shown}{others}",
+            "one trigger code for every pulse",
+            "Find which codes are pulses before epoching. Other codes dilute averages.",
+            subject,
+            recording_id,
+        )
+    ]
 
 
 def check_published_spacing(all_gaps: np.ndarray, protocol: dict) -> list[Issue]:

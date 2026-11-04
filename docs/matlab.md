@@ -1,8 +1,11 @@
 # Using the data in MATLAB
 
-**Status:** the round trip is tested by reading the exported files back in Python
-(`results/matlab_roundtrip.json`). MATLAB isn't installed on the build machine, so the MATLAB and
-EEGLAB code below has not been run. If you run it, please report anything that doesn't work.
+**Status:** exports are read back in Python (`results/matlab_roundtrip.json`), and opened in GNU Octave
+11.3.0 and EEGLAB 2026.0.0 (`results/octave_roundtrip.json`). There, the code below ran except
+`struct2table`, which Octave doesn't have. EEGLAB opened the file with one event per epoch, and a copy
+re-saved by EEGLAB matched the original in Python to within 0.00002 uV. Nothing has been run in MATLAB
+itself, so please report anything that doesn't work. `scripts/open_exports_check.m` is written to run there
+too.
 
 ## Export
 

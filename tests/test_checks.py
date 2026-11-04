@@ -311,6 +311,32 @@ def test_raw_label_is_noted(tmp_path):
     assert rules(sidecars.check_dataset_type(tmp_path)) == ["dataset.not_raw"]
 
 
+def _write_reference_files(root, reference, channels):
+    folder = root / "sub-001" / "eeg"
+    folder.mkdir(parents=True)
+    stem = "sub-001_task-tmseeg_acq-parietal"
+    (folder / f"{stem}_eeg.json").write_text(
+        json.dumps({"EEGReference": reference}), encoding="utf-8"
+    )
+    table = "name\ttype\n" + "".join(f"{name}\tEEG\n" for name in channels)
+    (folder / f"{stem}_channels.tsv").write_text(table, encoding="utf-8")
+
+
+def test_sidecar_reference_that_differs_from_the_paper_is_reported(tmp_path):
+    """Synthetic files: the sidecar names one reference and the protocol file another."""
+    _write_reference_files(tmp_path, "FCz", ["CZ", "FCZ"])
+    found = sidecars.check_published_reference(tmp_path, {"published": {"online_reference": "FPz"}})
+    assert rules(found) == ["sidecar.reference_differs_from_published"]
+    assert "FCz in 1 runs" in found[0].observed
+    assert "FPz is a channel in 0 of 1" in found[0].observed
+
+
+def test_sidecar_reference_that_matches_the_paper_is_not_reported(tmp_path):
+    _write_reference_files(tmp_path, "FPz", ["CZ", "FCZ"])
+    protocol = {"published": {"online_reference": "fpz"}}
+    assert sidecars.check_published_reference(tmp_path, protocol) == []
+
+
 def test_absent_dose_is_reported_and_present_dose_is_not(tmp_path):
     assert rules(sidecars.check_stimulation_dose(["age"], tmp_path)) == [
         "metadata.no_stimulation_dose"
@@ -331,6 +357,32 @@ def channel_rules(data: np.ndarray) -> list[str]:
 
 def test_normal_channels_pass():
     assert channel_rules(noise()) == []
+
+
+def test_frozen_stretch_across_channels_is_reported():
+    """Synthetic signal: every channel holds its value for 60 samples at once."""
+    data = noise()
+    data[:, 100:160] = data[:, [100]]
+    found = signal.check_frozen_signal(data, NAMES, PROTOCOL, "sub-1", "rec")
+    assert rules(found) == ["signal.frozen_signal"]
+    assert "1 stretch" in found[0].observed
+
+
+def test_short_or_single_channel_freeze_is_not_reported():
+    data = noise()
+    data[:, 100:110] = data[:, [100]]
+    data[0, 200:400] = data[0, 200]
+    assert signal.check_frozen_signal(data, NAMES, PROTOCOL, "sub-1", "rec") == []
+
+
+def test_markers_with_several_trigger_codes_are_reported():
+    found = timing.check_marker_codes(["128", "191", "128", "191"], "sub-1", "rec")
+    assert rules(found) == ["pulse.mixed_marker_codes"]
+    assert "128: 2" in found[0].observed
+
+
+def test_markers_with_one_trigger_code_are_not_reported():
+    assert timing.check_marker_codes(["128", "128"], "sub-1", "rec") == []
 
 
 def test_flat_channel_is_caught():

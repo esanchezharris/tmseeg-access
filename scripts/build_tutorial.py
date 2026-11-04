@@ -35,7 +35,7 @@ tmseeg-access catalog
 tmseeg-access check
 ```
 
-"Clean" here means the markers are trustworthy and known problems are avoided. These epochs have
+"Clean" here means the markers passed the checks and known problems are avoided. These epochs have
 not been through a full TMS-EEG cleaning pipeline, so they are a starting point for analysis.
 """),
     md("## 1. Open the dataset\n\nOpening it reads no signal."),
@@ -82,7 +82,8 @@ query(catalog, '''
 ''')
 """),
     md("""
-sub-001's parietal run has no issues. Its prefrontal run does, which we come back to in step 6.
+sub-001's parietal run has no error-level issue, only the reference warning every signal-checked
+run gets. Its prefrontal run has more, which we come back to in step 6.
 
 ## 4. Look at the pulses
 
@@ -97,8 +98,8 @@ pulses[["onset", "sample", "onset_sample", "gap_from_previous_s", "is_duplicate"
     md("""
 ## 5. Cut the epochs
 
-`baseline` is off unless you ask for it, and we end it 10 ms before the pulse. Most recordings
-carry a flat `TRIGGER` channel typed as EEG, so we exclude it by name. sub-001 does not have one,
+`baseline` is off unless you ask for it, and we end it 10 ms before the pulse. Most TMS runs
+carry a `TRIGGER` channel typed as EEG, usually flat, so we exclude it by name. sub-001 does not have one,
 so here that does nothing, but it makes this code safe for other subjects.
 
 The choices made are stored with the epochs.
@@ -118,8 +119,8 @@ epochs.metadata.head(3)
 ## 6. See why checking the run matters
 
 Global field power (the spread across channels at each moment) summarises the response in one
-line. Both runs below are from the same person and were processed the same way, but the prefrontal
-run still contains the TMS artifact. Note how far apart the two scales are.
+line. Both runs below are from the same person and both headers record the same interpolation, but the
+prefrontal run still contains a large deviation at the pulse. Note how far apart the two scales are.
 """),
     code("""
 def field_power(site):

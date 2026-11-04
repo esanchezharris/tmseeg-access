@@ -8,6 +8,7 @@ import mne
 import numpy as np
 import pandas as pd
 import pytest
+from scipy.io import loadmat
 
 from tmseeg_access.dataset import Dataset
 from tmseeg_access.matlab import (
@@ -52,6 +53,19 @@ def test_set_round_trip_keeps_signal_and_channels(epochs, tmp_path):
     assert back.info["sfreq"] == epochs.info["sfreq"]
     assert np.allclose(back.get_data(), epochs.get_data(), atol=SET_TOLERANCE_V)
     assert np.allclose(back.times, epochs.times)
+
+
+def test_set_has_one_event_per_epoch_at_time_zero(epochs, tmp_path):
+    """MNE passes raw-time annotations along, and they must not become events in the epochs."""
+    assert len(epochs.annotations) > 0
+    path = export_epochs_set(epochs, tmp_path / "e.set")
+    content = loadmat(path, squeeze_me=True, struct_as_record=False)
+    events = np.atleast_1d(content["event"])
+    assert len(events) == len(epochs)
+    pulse_sample = int(np.argmin(np.abs(epochs.times)))
+    positions = [(float(e.latency) - 1) % int(content["pnts"]) for e in events]
+    assert np.allclose(positions, pulse_sample)
+    assert [int(e.epoch) for e in events] == list(range(1, len(epochs) + 1))
 
 
 def test_set_keeps_its_table_and_provenance_beside_it(epochs, tmp_path):

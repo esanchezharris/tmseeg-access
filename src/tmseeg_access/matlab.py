@@ -67,7 +67,9 @@ def read_epochs_mat(path: Path) -> dict:
 def export_epochs_set(epochs: mne.Epochs, path: Path) -> Path:
     """Write an EEGLAB ``.set`` file, with its epoch table and provenance beside it."""
     path = Path(path)
-    epochs.export(path, fmt="eeglab", overwrite=True, verbose="ERROR")
+    # Annotations hold times in the raw recording. The exporter would read them as positions in the
+    # joined epochs and add events that never happened, so the file keeps only the epoch events.
+    epochs.copy().set_annotations(None).export(path, fmt="eeglab", overwrite=True, verbose="ERROR")
     if epochs.metadata is not None:
         epochs.metadata.to_csv(path.with_name(f"{path.stem}_epochs.csv"), index=False)
     path.with_name(f"{path.stem}_provenance.json").write_text(

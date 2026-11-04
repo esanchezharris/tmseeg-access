@@ -275,8 +275,8 @@ class Dataset:
         ``on_duplicate="error"`` (the default) refuses to continue if any markers are closer than
         ``duplicate_gap_s``. ``"keep_first"`` keeps the first marker of each group.
 
-        Channels are only removed if named in ``exclude_channels``. Most recordings have a flat
-        ``TRIGGER`` channel typed as EEG, so pass ``exclude_channels=("TRIGGER",)`` before average
+        Channels are only removed if named in ``exclude_channels``. Most TMS runs have a
+        ``TRIGGER`` channel typed as EEG, usually flat, so pass ``exclude_channels=("TRIGGER",)`` before average
         referencing. Names that a recording does not have are ignored.
 
         These choices, and what they removed, are recorded in ``epochs.info["description"]`` as

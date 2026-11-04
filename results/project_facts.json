@@ -1,11 +1,11 @@
 {
-  "rules_defined": 35,
-  "rules_that_fired_on_real_data": 19,
-  "issues": 250,
-  "tests_total": 203,
+  "rules_defined": 38,
+  "rules_that_fired_on_real_data": 22,
+  "issues": 301,
+  "tests_total": 210,
   "tests_needing_real_data": 4,
-  "tests_synthetic": 199,
+  "tests_synthetic": 206,
   "package_modules": 18,
-  "package_lines": 2799,
-  "test_lines": 1595
+  "package_lines": 2917,
+  "test_lines": 1661
 }

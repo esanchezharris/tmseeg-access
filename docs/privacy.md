@@ -15,7 +15,8 @@ A dataset can have tidy, anonymised file names and still carry identifying text 
 In this release (`results/header_provenance.json`):
 
 - Absolute file paths appear in the `.set` `filepath` field of 479 of 479 TMS runs.
-- The original file path appears in `comments` and in `history` in 432 runs.
+- The original file path appears in `comments` and in `history` in 432 runs (`history` counts are in
+  `results/hand_checks.json`).
 - `chaninfo` holds a path through a user's home folder in 432 runs, which exposes a local username.
 - Original filenames include a study code in 432 runs (`results/hand_checks.json`).
 
@@ -36,7 +37,8 @@ command refuses to write inside the source or into a folder that isn't empty.
 | `*_electrodes.tsv`, `*_coordsystem.json` | Kept, unless you pass `--drop-head-geometry` |
 | `.fdt` signal | Copied byte for byte, then verified by SHA-256 |
 
-**Date shifts** come from a keyed hash of the subject label, so intervals within a subject survive.
+**Date shifts** come from a keyed hash of the subject label, so intervals within a subject survive. This
+release has no acquisition dates, so date shifting is tested on synthetic files only.
 With no key, a random one is used and discarded, so shifts can't be reversed. Don't keep a key with
 the data.
 
@@ -66,13 +68,12 @@ so a person can decide.
 - **Demographics stay by default.** Age, sex, education and smoking status can identify someone in
   combination, especially in a small group. There is no check for small groups (k-anonymity), and
   ages are not capped.
-- **Subject labels are not re-coded.** The original numbering is kept, and this release's labels match
-  the numbers in its original filenames.
+- **Subject labels are not re-coded.** The original numbering is kept.
 - **Free text is only pattern-matched.** A name typed into a note won't match a path, email or date
   pattern unless it's in a field that is always blanked. Behavioural files and event values are not
   scanned for it.
 - **Some files aren't scanned.** `datacite.yml`, `README` and `CHANGES` are copied as they are. They
-  name dataset authors, not participants.
+  describe the dataset and hold no participant details.
 - **File dates.** The copy's `.set` files carry the time this step ran in their internal header.
 - **MRI defacing is out of scope.** This release includes no MRI.
 - **It only knows this layout.** It handles EEGLAB files and BIDS sidecars. Other formats, such as

@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from pathlib import Path
+
+import pandas as pd
 
 from tmseeg_access.checks.issues import Issue
 
@@ -170,6 +173,40 @@ def check_dataset_type(root: Path) -> list[Issue]:
             'DatasetType is "raw", but the preprint describes downsampling and interpolation',
             "a label that matches the processing applied",
             "Treat the data as partly preprocessed: do not reapply those steps blindly.",
+        )
+    ]
+
+
+def check_published_reference(root: Path, protocol: dict) -> list[Issue]:
+    """Report sidecars whose stated reference differs from the published recording reference.
+
+    The channel tables are counted too: a recording's reference usually isn't one of its channels.
+    """
+    published = protocol["published"]["online_reference"]
+    stated: Counter[str] = Counter()
+    for path in root.glob("sub-*/eeg/*task-tmseeg*_eeg.json"):
+        stated[str(json.loads(path.read_text(encoding="utf-8")).get("EEGReference"))] += 1
+    different = {name: n for name, n in stated.items() if name.lower() != published.lower()}
+    if not different:
+        return []
+
+    def has_channel(path: Path) -> bool:
+        return (
+            published.upper() in pd.read_csv(path, sep="\t")["name"].astype(str).str.upper().values
+        )
+
+    tables = list(root.glob("sub-*/eeg/*task-tmseeg*_channels.tsv"))
+    listed = sum(has_channel(path) for path in tables)
+    summary = ", ".join(f"{name} in {n} runs" for name, n in sorted(different.items()))
+    return [
+        Issue(
+            "sidecar.reference_differs_from_published",
+            "warning",
+            "eeg.json sidecars",
+            f"EEGReference is {summary}. {published} is a channel in {listed} of "
+            f"{len(tables)} channel tables",
+            f"online reference {published}, as the preprint states",
+            "Don't trust the sidecar's reference. Ask the authors, and re-reference explicitly.",
         )
     ]
 

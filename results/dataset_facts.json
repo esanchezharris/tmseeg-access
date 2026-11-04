@@ -73,11 +73,11 @@
       "runs": 12
     },
     {
-      "markers": 124,
+      "markers": 123,
       "runs": 4
     },
     {
-      "markers": 123,
+      "markers": 124,
       "runs": 4
     }
   ],
@@ -91,7 +91,7 @@
       "markers": 401
     },
     {
-      "recording_id": "sub-057_task-tmseeg_acq-parietal",
+      "recording_id": "sub-047_task-tmseeg_acq-prefrontal",
       "markers": 242
     }
   ],
