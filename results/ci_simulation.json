@@ -1,0 +1,27 @@
+{
+  "commit": "0736fed",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "is_a_github_run": false,
+  "steps": {
+    "install": {
+      "exit_code": 0,
+      "seconds": 5.0
+    },
+    "lint": {
+      "exit_code": 0,
+      "seconds": 0.2
+    },
+    "format": {
+      "exit_code": 0,
+      "seconds": 0.1
+    },
+    "tests": {
+      "exit_code": 0,
+      "seconds": 7.2
+    }
+  },
+  "total_seconds": 12.6,
+  "pytest_summary": "178 passed, 4 skipped in 5.12s",
+  "passed": 178,
+  "skipped": 4
+}

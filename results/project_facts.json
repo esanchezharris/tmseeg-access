@@ -1,0 +1,11 @@
+{
+  "rules_defined": 33,
+  "rules_that_fired_on_real_data": 18,
+  "issues": 208,
+  "tests_total": 182,
+  "tests_needing_real_data": 4,
+  "tests_synthetic": 178,
+  "package_modules": 18,
+  "package_lines": 2686,
+  "test_lines": 1391
+}

@@ -24,11 +24,7 @@ def collected(*extra: str) -> int:
         text=True,
         check=True,
     )
-    return int(
-        re.search(r"(\d+) tests? collected|(\d+)/\d+ tests collected", done.stdout)[0]
-        .split()[0]
-        .split("/")[0]
-    )
+    return sum(int(n) for n in re.findall(r"^tests\S*: (\d+)\s*$", done.stdout, re.MULTILINE))
 
 
 def main() -> None:
