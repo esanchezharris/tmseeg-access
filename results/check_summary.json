@@ -3,25 +3,28 @@
     "tmseeg_runs": 479,
     "runs_checked_events": 479,
     "runs_checked_against_header": 479,
-    "runs_checked_signal": 32,
+    "runs_checked_signal": 40,
     "subjects_with_signal_checked": [
       "sub-001",
       "sub-019",
       "sub-029",
+      "sub-057",
       "sub-071",
       "sub-092",
+      "sub-125",
       "sub-134",
       "sub-136",
       "sub-147"
     ]
   },
-  "issues_total": 160,
+  "issues_total": 208,
   "issues_by_rule": {
     "channels.inconsistent": 1,
     "channels.name_spelling": 1,
     "channels.names_differ": 4,
     "channels.trigger_typed_as_eeg": 1,
     "dataset.not_raw": 1,
+    "header.no_artifact_record": 47,
     "metadata.no_stimulation_dose": 1,
     "participant.missing_value": 3,
     "protocol.spacing": 1,
@@ -32,12 +35,12 @@
     "pulse.marker_burst": 1,
     "recording.missing": 6,
     "sidecar.dangling_reference": 1,
-    "signal.residual_pulse_artifact": 17,
+    "signal.residual_pulse_artifact": 18,
     "signal.trigger_not_flat": 1
   },
   "issues_by_severity": {
     "error": 68,
     "info": 33,
-    "warning": 59
+    "warning": 107
   }
 }

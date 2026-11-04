@@ -1,8 +1,8 @@
 {
-  "requested": 64,
-  "bytes": 3238209528,
-  "downloaded": 28,
-  "present": 36,
+  "requested": 80,
+  "bytes": 3993271552,
+  "downloaded": 8,
+  "present": 72,
   "failed": 0,
   "failures": [],
   "tier": "signal",

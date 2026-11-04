@@ -271,6 +271,30 @@ def test_event_count_differs_from_header():
     assert compare(events=6) == ["sidecar.event_count"]
 
 
+def provenance(comments: str, record: dict | None = None) -> list[str]:
+    found = sidecars.check_header_provenance(
+        "rec", "sub-1", "parietal", comments, record or {"interpolated": "yes"}, PROTOCOL
+    )
+    return rules(found)
+
+
+def test_matching_site_code_passes():
+    assert provenance("Original file: /x/001_SP_PP.dap") == []
+
+
+def test_site_code_disagreeing_with_the_label_is_caught():
+    assert provenance("Original file: /x/001_SP_DLPFC.dap") == ["header.site_mismatch"]
+
+
+def test_filename_without_a_site_code_is_not_a_mismatch():
+    assert provenance("Original file: sub-1_task-tmseeg_acq-parietal_eeg.eeg") == []
+
+
+def test_absent_artifact_record_is_noted():
+    found = sidecars.check_header_provenance("rec", "sub-1", "parietal", "", None, PROTOCOL)
+    assert rules(found) == ["header.no_artifact_record"]
+
+
 def test_dangling_reference_is_caught(tmp_path):
     eeg = tmp_path / "sub-1" / "eeg"
     eeg.mkdir(parents=True)
@@ -391,6 +415,18 @@ def test_large_artifact_is_an_error_and_reports_its_size():
     found = signal.check_pulse_artifact(measured, PROTOCOL, "sub-1", "rec")
     assert found[0].severity == "error"
     assert measured["peak_deviation_uv"] > 3000
+
+
+def test_artifact_says_when_the_header_claims_interpolation():
+    measured = {
+        "rough_from_ms": -5,
+        "rough_to_ms": 15,
+        "smooth_offsets_in_window": 0,
+        "peak_deviation_uv": 9000.0,
+        "peak_deviation_at_ms": 4,
+    }
+    found = signal.check_pulse_artifact(measured, PROTOCOL, "sub-1", "rec", True)
+    assert "header records interpolation" in found[0].observed
 
 
 def test_a_brief_rough_blip_is_not_an_artifact():

@@ -133,7 +133,11 @@ def measure_pulse_artifact(data_uv: np.ndarray, samples: np.ndarray, protocol: d
 
 
 def check_pulse_artifact(
-    measured: dict, protocol: dict, subject: str, recording_id: str
+    measured: dict,
+    protocol: dict,
+    subject: str,
+    recording_id: str,
+    header_says_interpolated: bool = False,
 ) -> list[Issue]:
     """Report a pulse artifact left in the data, or markers with no sign of a pulse at all."""
     thresholds = protocol["thresholds"]
@@ -150,7 +154,8 @@ def check_pulse_artifact(
                 f"{measured['rough_from_ms']} to {measured['rough_to_ms']} ms around pulses",
                 f"median deviation peaks at {peak} uV, {measured['peak_deviation_at_ms']} ms "
                 f"after the marker; {measured['smooth_offsets_in_window']} of "
-                f"{stop - start + 1} window samples look interpolated",
+                f"{stop - start + 1} window samples look interpolated"
+                + ("; the header records interpolation" if header_says_interpolated else ""),
                 f"interpolated from {start} to {stop} ms, with no large deviation",
                 "Do not interpret early responses in this run without removing the artifact.",
                 subject,

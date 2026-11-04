@@ -15,11 +15,15 @@ from tmseeg_access.dataset import PULSE_COLUMN, Dataset
 
 
 def _read_header(path) -> dict:
-    header = read_mat(str(path), variable_names=["nbchan", "pnts", "srate", "chanlocs", "event"])
+    fields = ["nbchan", "pnts", "srate", "chanlocs", "event", "comments", "tmscut"]
+    header = read_mat(str(path), variable_names=fields)
     locations = header["chanlocs"]
     events = header["event"]
     latency = events.get("latency", []) if isinstance(events, dict) else []
+    record = header.get("tmscut")
     return {
+        "comments": str(header.get("comments", "")),
+        "artifact_record": record if isinstance(record, dict) and record else None,
         "nbchan": header["nbchan"],
         "pnts": header["pnts"],
         "srate": header["srate"],
@@ -75,6 +79,14 @@ def run_all(ds: Dataset, protocol: dict | None = None) -> tuple[pd.DataFrame, di
             issues += sidecars.compare_with_header(
                 row.recording_id, row.subject, sidecar, header, tsv_channels, len(events), protocol
             )
+            issues += sidecars.check_header_provenance(
+                row.recording_id,
+                row.subject,
+                row.acquisition,
+                header["comments"],
+                header["artifact_record"],
+                protocol,
+            )
             headers_checked += 1
 
         if row.has_signal:
@@ -85,12 +97,17 @@ def run_all(ds: Dataset, protocol: dict | None = None) -> tuple[pd.DataFrame, di
             samples = flagged.loc[~flagged["is_duplicate"], "onset_sample"].to_numpy()
             samples = samples[samples < data.shape[1]]
             measured = signal.measure_pulse_artifact(data, samples, protocol)
-            issues += signal.check_pulse_artifact(measured, protocol, row.subject, row.recording_id)
+            record = header["artifact_record"] if row.has_header else None
+            says_interpolated = bool(record) and record.get("interpolated") == "yes"
+            issues += signal.check_pulse_artifact(
+                measured, protocol, row.subject, row.recording_id, says_interpolated
+            )
             artifact_rows.append(
                 {
                     "recording_id": row.recording_id,
                     "subject": row.subject,
                     "acquisition": row.acquisition,
+                    "header_says_interpolated": says_interpolated,
                     **measured,
                 }
             )

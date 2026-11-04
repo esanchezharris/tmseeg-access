@@ -1,0 +1,46 @@
+{
+  "runs": 479,
+  "site_labels": {
+    "runs_with_a_site_code": 432,
+    "agree_with_label": 432,
+    "control_runs_coded_SHAM": 107
+  },
+  "artifact_record": {
+    "runs_with_record": 432,
+    "cut_windows_ms": {
+      "[-1, 5]": 432
+    },
+    "record_rates_hz": {
+      "10000.0": 432
+    },
+    "interpolated_values": {
+      "yes": 432
+    }
+  },
+  "batch_without_record": {
+    "runs": 47,
+    "subjects": [
+      "sub-121",
+      "sub-122",
+      "sub-123",
+      "sub-124",
+      "sub-125",
+      "sub-126",
+      "sub-127",
+      "sub-128",
+      "sub-129",
+      "sub-130",
+      "sub-137",
+      "sub-140"
+    ],
+    "runs_with_mixed_case_names": 47,
+    "runs_with_trigger_channel": 0,
+    "mixed_case_runs_in_whole_dataset": 47,
+    "runs_with_site_code": 0
+  },
+  "absolute_paths_left_in_headers": {
+    "comments": 432,
+    "filepath": 479,
+    "chaninfo": 432
+  }
+}

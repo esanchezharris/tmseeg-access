@@ -81,6 +81,51 @@ def compare_with_header(
     return issues
 
 
+def check_header_provenance(
+    recording_id: str,
+    subject: str,
+    acquisition: str,
+    comments: str,
+    artifact_record: dict | None,
+    protocol: dict,
+) -> list[Issue]:
+    """Compare the site label with the original filename, and look for an artifact record.
+
+    ``comments`` is EEGLAB's note of the source file, which often names the site. ``artifact_record``
+    is TESA's ``tmscut`` entry, written when the artifact window is cut out.
+    """
+    issues = []
+    codes = protocol["source_site_codes"]
+    match = re.search(r"SP_([A-Za-z0-9]+)", comments)
+    if match and codes.get(match[1].upper(), acquisition) != acquisition:
+        issues.append(
+            Issue(
+                "header.site_mismatch",
+                "error",
+                ".set comments vs filename",
+                f"source file says {match[1]}, recording is labelled {acquisition}",
+                f"{match[1]} means {codes[match[1].upper()]}",
+                "Do not trust the site label until the authors confirm it.",
+                subject,
+                recording_id,
+            )
+        )
+    if not artifact_record:
+        issues.append(
+            Issue(
+                "header.no_artifact_record",
+                "warning",
+                ".set tmscut field",
+                "no record of artifact removal",
+                "a tmscut entry, as most runs have",
+                "Check the signal around pulses: this run may have had different processing.",
+                subject,
+                recording_id,
+            )
+        )
+    return issues
+
+
 def _referenced_suffixes(root: Path) -> set[str]:
     """File patterns that sidecars mention, such as ``*_nibs.tsv``."""
     found: set[str] = set()
