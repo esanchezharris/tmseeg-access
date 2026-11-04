@@ -1,0 +1,40 @@
+[project]
+name = "tmseeg-access"
+version = "0.1.0"
+description = "Clean, fast access to public TMS-EEG data and its metadata, with data quality checks and reporting."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "duckdb>=1.1",
+    "eeglabio>=0.0.3",
+    "matplotlib>=3.8",
+    "mne>=1.8",
+    "mne-bids>=0.16",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "pymatreader>=0.0.32",
+    "scipy>=1.13",
+]
+
+[project.scripts]
+tmseeg-access = "tmseeg_access.cli:main"
+
+[dependency-groups]
+dev = ["nbclient>=0.10", "ipykernel>=6.29", "nbformat>=5.10", "pytest>=8.3", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tmseeg_access"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["realdata: needs the downloaded dataset; skipped when TMSEEG_DATA_ROOT is unset"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]

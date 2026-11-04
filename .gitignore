@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+dist/
+*.duckdb
+*.duckdb.wal
+# Dataset files never live in this repo. They stay under TMSEEG_DATA_ROOT.
+data/
+*.fdt
+*.set
+*.eeg
+*.vhdr
+*.vmrk

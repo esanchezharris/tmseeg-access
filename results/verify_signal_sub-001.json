@@ -1,0 +1,11 @@
+{
+  "requested": 8,
+  "bytes": 375601696,
+  "downloaded": 0,
+  "present": 8,
+  "failed": 0,
+  "failures": [],
+  "tier": "signal",
+  "dataset": "ds008037",
+  "tag": "1.0.1"
+}

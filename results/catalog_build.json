@@ -1,0 +1,12 @@
+{
+  "path": "E:\\tms-eeg-data\\ds008037\\derivatives\\tmseeg-access\\catalog.duckdb",
+  "tables": {
+    "recordings": 717,
+    "participants": 123,
+    "behavior": 123,
+    "pulses": 301143,
+    "files": 8118
+  },
+  "seconds_to_build": 2.83,
+  "file_bytes": 6303744
+}

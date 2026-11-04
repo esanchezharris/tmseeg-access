@@ -1,0 +1,110 @@
+{
+  "subjects": 123,
+  "recordings": [
+    {
+      "task": "rest",
+      "n": 121
+    },
+    {
+      "task": "tmseeg",
+      "n": 479
+    },
+    {
+      "task": "workingmemory",
+      "n": 117
+    }
+  ],
+  "tmseeg_runs_expected_if_every_subject_had_all_4_sites": 492,
+  "tmseeg_runs_present": 479,
+  "tmseeg_runs_missing_by_subject": {
+    "sub-031": [
+      "control",
+      "parietal",
+      "prefrontal",
+      "premotor"
+    ],
+    "sub-053": [
+      "premotor"
+    ],
+    "sub-072": [
+      "control",
+      "parietal",
+      "prefrontal",
+      "premotor"
+    ],
+    "sub-078": [
+      "control"
+    ],
+    "sub-104": [
+      "control",
+      "prefrontal"
+    ],
+    "sub-127": [
+      "control"
+    ]
+  },
+  "pulse_markers_indexed": 301143,
+  "pulse_markers_flagged_duplicate": 243139,
+  "channels_declared_in_tmseeg_sidecars": [
+    {
+      "channels": 62,
+      "runs": 87
+    },
+    {
+      "channels": 63,
+      "runs": 392
+    }
+  ],
+  "tmseeg_runs_by_marker_count_top": [
+    {
+      "markers": 120,
+      "runs": 411
+    },
+    {
+      "markers": 240,
+      "runs": 19
+    },
+    {
+      "markers": 122,
+      "runs": 15
+    },
+    {
+      "markers": 121,
+      "runs": 12
+    },
+    {
+      "markers": 123,
+      "runs": 4
+    },
+    {
+      "markers": 124,
+      "runs": 4
+    }
+  ],
+  "largest_marker_count_runs": [
+    {
+      "recording_id": "sub-071_task-tmseeg_acq-prefrontal",
+      "markers": 240923
+    },
+    {
+      "recording_id": "sub-134_task-tmseeg_acq-parietal",
+      "markers": 401
+    },
+    {
+      "recording_id": "sub-057_task-tmseeg_acq-parietal",
+      "markers": 242
+    }
+  ],
+  "release_files": [
+    {
+      "local": false,
+      "files": 1427,
+      "bytes": 109375086247
+    },
+    {
+      "local": true,
+      "files": 6691,
+      "bytes": 420241204
+    }
+  ]
+}
