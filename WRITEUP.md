@@ -56,15 +56,3 @@ the authors processed but not that a pulse happened, and a median across channel
 3. Separate bad electrodes from pulse artifact.
 4. Test the exports in MATLAB.
 5. Add a BrainVision reader, the format in the lab's `Analysis-Physiology` pipeline.
-
-## To say out loud
-
-"I built a Python package that gives analysts clean access to a public TMS-EEG dataset, from a simple API
-down to epochs around each pulse, with a SQL catalog of every recording. It treats data quality as a
-first-class output: every issue records what was observed, where, the rule and a suggested action, and it
-never silently fixes anything. Those checks found things you can't see in the file names, such as pulse
-spacing that disagrees with the published protocol, a sidecar reference that disagrees with the preprint,
-and runs with large deviations at the pulse even though their headers record interpolation. Review mattered
-too: opening the exports in EEGLAB exposed false events my Python test had missed, and a separate AI review
-agent recomputed the findings from the raw files, which changed three claims. It's the kind of work that
-replaces a hand-kept list of bad recordings with something repeatable."

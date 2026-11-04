@@ -130,7 +130,7 @@ adds the Octave and EEGLAB test when `OCTAVE_CLI` and `EEGLAB_PATH` are set.
 
 Signal checks are only as complete as your download. A check that couldn't run is reported as coverage,
 not as a pass. The package is built for this dataset's layout, and supporting another would take a new
-protocol file and some reader changes. It was built and tested on Windows only. The CI workflow targets Ubuntu and hasn't run yet.
+protocol file and some reader changes. It was built on Windows, and CI runs the synthetic tests on Ubuntu. It wasn't tested on a Mac.
 
 ## License
 

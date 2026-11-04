@@ -1,7 +1,7 @@
 # Notes: the science, the assumptions and the evidence
 
-Written for a software engineer. The first half explains the science well enough to discuss it in an
-interview. The second half records every assumption made about ds008037 and how it was checked.
+The first half explains the science for a software engineer. The second half records every assumption
+made about ds008037 and how it was checked.
 Measured numbers come from the file named beside them, and quoted ones from
 `results/published_values.json`.
 
