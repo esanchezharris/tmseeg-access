@@ -31,7 +31,7 @@ First version, built around OpenNeuro ds008037 v1.0.1.
 ### Known gaps
 
 - Exports were tested in GNU Octave and EEGLAB, not in MATLAB itself. `struct2table` is unrun.
-- The CI workflow has not run on GitHub. Its steps were run in a clean clone on Windows. Linux and Mac
-  are untested.
+- The CI workflow passes on GitHub's Linux runner (`results/github_ci.json`) and in a clean clone on
+  Windows, with synthetic tests only. It wasn't tested on a Mac.
 - Stimulation dose can't be joined, because the release doesn't include it per subject.
 - Signal checks cover 10 subjects, chosen by hand mostly for known problems.

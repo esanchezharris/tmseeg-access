@@ -46,7 +46,8 @@ the authors processed but not that a pulse happened, and a median across channel
   electrodes, not pulse artifact.
 - It targets one dataset, and another would need a new protocol file and reader changes.
 - Exports were opened in GNU Octave and EEGLAB, not in MATLAB itself.
-- CI hasn't run on GitHub, only in a clean clone on Windows. It wasn't tested on Linux or a Mac.
+- CI passes on GitHub's Linux runner and in a clean clone on Windows, with synthetic tests only. It wasn't
+  tested on a Mac.
 - It's not Keller lab data, and it contains no iTBS. De-identification isn't a HIPAA certification.
 
 **Next steps.**
