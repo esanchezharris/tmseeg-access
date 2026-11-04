@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 
 import numpy as np
 import pandas as pd
@@ -79,6 +80,19 @@ def test_flag_duplicates_uses_a_window_not_equality():
     flagged = flag_duplicates(table, 1000, 0.002)
     assert flagged["is_duplicate"].tolist() == [False, True, False]
     assert flagged["onset_sample"].tolist() == [1000, 1000, 4000]
+
+
+def test_out_of_order_marker_is_not_a_duplicate():
+    table = pd.DataFrame({"onset": [5.0, 8.0, 7.0, 10.0]})
+    assert flag_duplicates(table, 1000, 0.002)["is_duplicate"].tolist() == [False] * 4
+
+
+def test_unrecognised_recording_names_are_reported(synthetic_root, tmp_path):
+    root = tmp_path / "copy"
+    shutil.copytree(synthetic_root, root)
+    (root / "sub-901/eeg/sub-901_task-rest_run-01_eeg.json").write_text("{}", encoding="utf-8")
+    with pytest.warns(UserWarning, match="run-01"):
+        Dataset(root).recordings()
 
 
 def test_onset_sample_comes_from_onset_not_the_one_based_column(ds):

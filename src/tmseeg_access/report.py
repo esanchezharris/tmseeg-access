@@ -70,7 +70,9 @@ RULE_MEANINGS = {
     "sidecar.sampling_rate": "Sidecar and header disagree on sampling rate",
     "signal.flat_channel": "A flat EEG channel",
     "signal.no_pulse_signature": "No change in the signal around markers",
+    "signal.no_usable_pulses": "No marker has a complete window of signal",
     "signal.residual_pulse_artifact": "The TMS artifact is still in the signal",
+    "signal.reference_channel_active": "The stated reference channel carries signal",
     "signal.saturated_channel": "A channel stuck at its extreme value",
     "signal.trigger_not_flat": "The trigger channel carries signal",
 }
@@ -239,7 +241,7 @@ def chart_artifact(artifact: pd.DataFrame, path: Path) -> bytes:
     sites = [s for s in SITE_ORDER if s in set(artifact["acquisition"])]
     rng = np.random.default_rng(0)  # a fixed sideways jitter, so overlapping dots stay visible
     for row, site in enumerate(sites):
-        values = artifact.loc[artifact["acquisition"] == site, "peak_deviation_uv"]
+        values = artifact.loc[artifact["acquisition"] == site, "peak_channel_uv"]
         spread = rng.uniform(-0.17, 0.17, len(values))
         axes.scatter(
             values, row + spread, s=46, color=SERIES, edgecolors=SURFACE, linewidths=1.2, zorder=3
@@ -252,7 +254,9 @@ def chart_artifact(artifact: pd.DataFrame, path: Path) -> bytes:
     axes.grid(axis="x", color=GRID, linewidth=0.7)
     axes.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter("{x:,.0f}"))
     axes.set_xlabel(
-        "Peak median deviation around the pulse, uV (log scale)", color=INK_SECONDARY, fontsize=9
+        "Largest deviation of any averaged channel around the pulse, uV (log scale)",
+        color=INK_SECONDARY,
+        fontsize=9,
     )
     axes.set_title(
         "Pulse artifact left in each signal-checked run", loc="left", color=INK, fontsize=11
@@ -285,7 +289,8 @@ def build_facts(inputs: Inputs) -> dict:
     tms = inputs.recordings[inputs.recordings["task"] == "tmseeg"]
     gaps = usable_gaps(inputs.pulses)
     artifact = inputs.artifact
-    severe = int((artifact["peak_deviation_uv"] >= 1000).sum())
+    large = (artifact["peak_deviation_uv"] >= 1000) | (artifact["peak_channel_uv"] >= 1000)
+    severe = int(large.sum())
     flagged = inputs.issues[inputs.issues["rule"] == "signal.residual_pulse_artifact"]
     coverage = inputs.summary["coverage"]
     return {
@@ -305,11 +310,9 @@ def build_facts(inputs: Inputs) -> dict:
         "gaps_in_published_range": int(((gaps >= 4) & (gaps <= 6)).sum()),
         "signal_runs_with_residual_artifact": len(flagged),
         "signal_runs_at_or_over_1000_uv": severe,
-        "peak_deviation_max_uv": float(artifact["peak_deviation_uv"].max())
-        if len(artifact)
-        else None,
+        "peak_channel_max_uv": float(artifact["peak_channel_uv"].max()) if len(artifact) else None,
         "signal_runs_header_says_interpolated_but_over_1000_uv": int(
-            (artifact["header_says_interpolated"] & (artifact["peak_deviation_uv"] >= 1000)).sum()
+            (artifact["header_says_interpolated"] & large).sum()
         ),
     }
 
@@ -349,11 +352,13 @@ def write_report(inputs: Inputs, output: Path) -> Path:
         (f"{facts['issues']}", "issues recorded"),
     ]
     tile_html = "".join(f"<div class=tile><b>{a}</b><span>{b}</span></div>" for a, b in tiles)
-    worst = inputs.artifact.sort_values("peak_deviation_uv", ascending=False).head(10)
+    worst = inputs.artifact.sort_values("peak_channel_uv", ascending=False).head(10)
     worst = worst[
         [
             "subject",
             "acquisition",
+            "peak_channel",
+            "peak_channel_uv",
             "peak_deviation_uv",
             "peak_field_power_uv",
             "header_says_interpolated",
@@ -393,10 +398,10 @@ runs keep a pulse artifact, and {facts["signal_runs_at_or_over_1000_uv"]} peak a
 {facts["signal_runs_header_says_interpolated_but_over_1000_uv"]} of those record interpolation in
 their header, so the header alone cannot show a run is clean.</p>
 {_img(chart_d, "Dot plot of peak deviation around pulses per run, by stimulation site")}
-<p>Deviation is measured on each channel in the recorded reference. Field power counts only what
-differs between channels, so a large deviation with a much smaller field power means most of the
-artifact is shared by every channel.</p>
-{_table_html(worst, ("peak_deviation_uv", "peak_field_power_uv"))}
+<p>Peak channel is the largest deviation of any one channel's averaged response. Deviation is the
+median across channels, so it misses an artifact on a few channels. Field power counts only what
+differs between channels. All three are in the recorded reference.</p>
+{_table_html(worst, ("peak_channel_uv", "peak_deviation_uv", "peak_field_power_uv"))}
 
 <h2>Issues by rule</h2>
 {_img(chart_c, "Bar chart of issue counts for each quality rule")}

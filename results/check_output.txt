@@ -1,21 +1,22 @@
-208 issues written to results
-severity  rule                          
-error     channels.trigger_typed_as_eeg      1
-          pulse.duplicate                   58
-          pulse.marker_burst                 1
-          signal.residual_pulse_artifact     8
-info      channels.names_differ              4
-          dataset.not_raw                    1
-          participant.missing_value          3
-          pulse.gap_long                    24
-          signal.trigger_not_flat            1
-warning   channels.inconsistent              1
-          channels.name_spelling             1
-          header.no_artifact_record         47
-          metadata.no_stimulation_dose       1
-          protocol.spacing                   1
-          pulse.count                       34
-          pulse.gap_short                    5
-          recording.missing                  6
-          sidecar.dangling_reference         1
-          signal.residual_pulse_artifact    10
+250 issues written to results
+severity  rule                           
+error     channels.trigger_typed_as_eeg       1
+          pulse.duplicate                    58
+          pulse.marker_burst                  1
+          signal.residual_pulse_artifact     13
+info      channels.names_differ               4
+          dataset.not_raw                     1
+          participant.missing_value           3
+          pulse.gap_long                     24
+          signal.trigger_not_flat             1
+warning   channels.inconsistent               1
+          channels.name_spelling              1
+          header.no_artifact_record          47
+          metadata.no_stimulation_dose        1
+          protocol.spacing                    1
+          pulse.count                        34
+          pulse.gap_short                     5
+          recording.missing                   6
+          sidecar.dangling_reference          1
+          signal.reference_channel_active    40
+          signal.residual_pulse_artifact      7

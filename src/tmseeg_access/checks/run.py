@@ -90,27 +90,39 @@ def run_all(ds: Dataset, protocol: dict | None = None) -> tuple[pd.DataFrame, di
             headers_checked += 1
 
         if row.has_signal:
-            raw = ds.load_raw(row.subject, acquisition=row.acquisition)
+            raw = ds.load_raw(row.subject, task=task, acquisition=row.acquisition)
             data, labels = raw.get_data() * 1e6, raw.ch_names
             issues += signal.check_channels(data, labels, protocol, row.subject, row.recording_id)
-            flagged = ds.pulses(row.subject, row.acquisition)
+            flagged = ds.pulses(row.subject, row.acquisition, task=task)
             samples = flagged.loc[~flagged["is_duplicate"], "onset_sample"].to_numpy()
             samples = samples[samples < data.shape[1]]
-            measured = signal.measure_pulse_artifact(data, samples, protocol)
+            issues += signal.check_reference_channel(
+                data,
+                labels,
+                sidecar.get("EEGReference"),
+                protocol,
+                row.subject,
+                row.recording_id,
+            )
+            eeg_only = [i for i, name in enumerate(labels) if name != signal.TRIGGER]
+            measured = signal.measure_pulse_artifact(
+                data[eeg_only], samples, protocol, [labels[i] for i in eeg_only]
+            )
             record = header["artifact_record"] if row.has_header else None
             says_interpolated = bool(record) and record.get("interpolated") == "yes"
             issues += signal.check_pulse_artifact(
                 measured, protocol, row.subject, row.recording_id, says_interpolated
             )
-            artifact_rows.append(
-                {
-                    "recording_id": row.recording_id,
-                    "subject": row.subject,
-                    "acquisition": row.acquisition,
-                    "header_says_interpolated": says_interpolated,
-                    **measured,
-                }
-            )
+            if measured is not None:
+                artifact_rows.append(
+                    {
+                        "recording_id": row.recording_id,
+                        "subject": row.subject,
+                        "acquisition": row.acquisition,
+                        "header_says_interpolated": says_interpolated,
+                        **measured,
+                    }
+                )
             signal_checked += 1
 
     issues += consistency.check_channel_names(names)

@@ -1,11 +1,12 @@
 rule,severity,issues,meaning
 pulse.duplicate,error,58,Pulse markers under 2 ms apart
-signal.residual_pulse_artifact,error,8,The TMS artifact is still in the signal
+signal.residual_pulse_artifact,error,13,The TMS artifact is still in the signal
 channels.trigger_typed_as_eeg,error,1,A flat trigger channel is listed as EEG
 pulse.marker_burst,error,1,A continuous stream of markers
 header.no_artifact_record,warning,47,No record of artifact removal in the header
+signal.reference_channel_active,warning,40,The stated reference channel carries signal
 pulse.count,warning,34,Distinct pulses in a run differ from 120
-signal.residual_pulse_artifact,warning,10,The TMS artifact is still in the signal
+signal.residual_pulse_artifact,warning,7,The TMS artifact is still in the signal
 recording.missing,warning,6,An expected TMS run is absent
 pulse.gap_short,warning,5,Gaps shorter than the band seen in this release
 channels.inconsistent,warning,1,Recordings declare different channel counts

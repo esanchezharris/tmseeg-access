@@ -62,6 +62,14 @@ def test_set_keeps_its_table_and_provenance_beside_it(epochs, tmp_path):
     assert record["duplicates_removed"] == 2
 
 
+def test_mat_round_trip_keeps_shape_for_one_epoch_and_one_channel(epochs, tmp_path):
+    small = epochs[0].copy().pick([epochs.ch_names[0]])
+    back = read_epochs_mat(export_epochs_mat(small, tmp_path / "s.mat"))
+    assert back["data_uv"].shape == (1, 1, len(small.times))
+    assert back["channels"] == small.ch_names
+    assert len(back["epochs_table"]["event_id"]) == 1
+
+
 def test_metadata_round_trip_keeps_values_and_gaps(synthetic_root, tmp_path):
     table = Dataset(synthetic_root).metadata()
     back = read_metadata_mat(export_metadata(table, tmp_path / "m.mat"))

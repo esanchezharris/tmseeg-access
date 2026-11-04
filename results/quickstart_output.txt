@@ -13,13 +13,13 @@ sub-001 workingmemory         NaN       False       False
    717 rows, 21 columns. sub-001 parietal: {'age': 22, 'sex': 'female', 'pulse_count': 120, 'channels_sidecar': 62, 'nback_accuracy': 0.9538461538461539}
 4. Open the recording. Lazy: no signal is read yet
    <RawEEGLAB | sub-001_task-tmseeg_acq-parietal_eeg.fdt, 62 x 377400 (377.4 s), ~73 KiB, data not loaded>
-   first open 193.9 ms, repeat 1.01 ms
+   first open 107.7 ms, repeat 0.88 ms
 5. Pulses, as published, with spacing
    {'count': 120, 'suspected_duplicates': 0, 'gap_min_s': 2.531, 'gap_median_s': 3.087, 'gap_max_s': 3.496}
 6. Epochs around each pulse
-   <Epochs | 120 events (all good), -0.1 � 0.5 s (baseline -0.1 � -0.01 s), ~34.2 MiB, data loaded, with metadata,
+   <Epochs | 120 events (all good), -0.1 â€“ 0.5 s (baseline -0.1 â€“ -0.01 s), ~34.2 MiB, data loaded, with metadata,
  'parietal': 120>
-   first 247.9 ms, repeat 26.0 ms
+   first 238.2 ms, repeat 26.6 ms
    provenance: {"source": "sub-001_task-tmseeg_acq-parietal", "on_duplicate": "error", "duplicate_gap_s": 0.002, "markers_in_events_tsv": 120, "duplicates_removed": 0, "longest_duplicate_group_s": 0.0, "channels_excluded": [], "epochs_lost_at_recording_edges": 0, "tmin": -0.1, "tmax": 0.5, "baseline": [-0.1, -0.01]}
 subject acquisition     event_id   onset  onset_sample  gap_from_previous_s
 sub-001    parietal event-000001  8.7837          8784                  NaN
@@ -33,5 +33,5 @@ acquisition  runs  markers  runs_not_120
    parietal   121    15540            17
  prefrontal   120   255817            19
    premotor   120    15018            22
-   median query time 18.99 ms, including opening the file
+   median query time 18.02 ms, including opening the file
 Saved quickstart.json

@@ -20,6 +20,7 @@ First version, built around OpenNeuro ds008037 v1.0.1.
 - HTML report and CSVs built from saved results.
 - Tutorial notebook, API reference, example queries, and privacy and MATLAB guides.
 - GitHub Actions workflow for the synthetic tests.
+- `scripts/rebuild_evidence.py`, which regenerates every saved result and generated doc.
 
 ### Known gaps
 

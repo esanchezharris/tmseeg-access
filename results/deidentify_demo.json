@@ -1,31 +1,46 @@
 {
-  "certification": "None. This is not a certification of HIPAA compliance.",
-  "files_written": {
-    ".bidsignore": 1,
-    ".gitattributes": 1,
-    "CHANGES": 1,
-    ".yml": 1,
-    ".json": 32,
-    ".tsv": 27,
-    "README": 1,
-    ".fdt": 4,
-    ".set": 4
+  "subject": "sub-001",
+  "log": {
+    "certification": "None. This is not a certification of HIPAA compliance.",
+    "files_written": {
+      ".bidsignore": 1,
+      ".gitattributes": 1,
+      "CHANGES": 1,
+      ".yml": 1,
+      ".json": 32,
+      ".tsv": 27,
+      "README": 1,
+      ".fdt": 4,
+      ".set": 4
+    },
+    "fields_changed": {
+      "header.chaninfo.filename": 4,
+      "header.comments": 4,
+      "header.filepath": 4,
+      "header.history": 4,
+      "participants.columns_dropped": 0,
+      "sidecar.InstitutionAddress": 6,
+      "sidecar.InstitutionName": 6,
+      "sidecar.InstitutionalDepartmentName": 6
+    },
+    "signal_files_identical_to_source": 4,
+    "signal_files_changed": [],
+    "headers_with_suspicious_text_after": {},
+    "text_files_with_suspicious_text_after": [
+      "dataset_description.json"
+    ],
+    "date_shift_key": "random, discarded"
   },
-  "fields_changed": {
-    "header.chaninfo.filename": 4,
-    "header.comments": 4,
-    "header.filepath": 4,
-    "header.history": 4,
-    "participants.columns_dropped": 0,
-    "sidecar.InstitutionAddress": 6,
-    "sidecar.InstitutionName": 6,
-    "sidecar.InstitutionalDepartmentName": 6
+  "epochs_identical_to_source": {
+    "control": true,
+    "parietal": true,
+    "prefrontal": true,
+    "premotor": true
   },
-  "signal_files_identical_to_source": 4,
-  "signal_files_changed": [],
-  "headers_with_suspicious_text_after": {},
-  "text_files_with_suspicious_text_after": [
-    "dataset_description.json"
-  ],
-  "date_shift_key": "random, discarded"
+  "header_fields_with_suspicious_text_before": [
+    "chaninfo",
+    "comments",
+    "filepath",
+    "history"
+  ]
 }

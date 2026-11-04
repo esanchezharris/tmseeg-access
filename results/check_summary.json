@@ -17,7 +17,7 @@
       "sub-147"
     ]
   },
-  "issues_total": 208,
+  "issues_total": 250,
   "issues_by_rule": {
     "channels.inconsistent": 1,
     "channels.name_spelling": 1,
@@ -35,12 +35,13 @@
     "pulse.marker_burst": 1,
     "recording.missing": 6,
     "sidecar.dangling_reference": 1,
-    "signal.residual_pulse_artifact": 18,
+    "signal.reference_channel_active": 40,
+    "signal.residual_pulse_artifact": 20,
     "signal.trigger_not_flat": 1
   },
   "issues_by_severity": {
-    "error": 68,
+    "error": 73,
     "info": 33,
-    "warning": 107
+    "warning": 144
   }
 }

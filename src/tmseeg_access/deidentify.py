@@ -34,6 +34,7 @@ SIDECAR_FIELDS = (
     "SoftwareVersions",
 )
 HEADER_FIELDS = ("comments", "history", "filepath", "subject", "group", "session", "condition")
+LEFTOVER_SUFFIXES = (".part", ".tmp")
 HEAD_GEOMETRY = ("_electrodes.tsv", "_coordsystem.json")
 _SUSPECT = re.compile(
     r"(?:[A-Za-z]:[\\/])"  # Windows drive path
@@ -163,6 +164,8 @@ def _check_locations(source: Path, output: Path) -> None:
 def _wanted(relative: Path, subjects: set[str] | None) -> bool:
     if relative.parts[0] == "derivatives" or relative.parts[0].startswith(".datalad"):
         return False
+    if relative.name.endswith(LEFTOVER_SUFFIXES):
+        return False  # an unfinished download would carry its header past the scrubbing below
     is_subject_path = relative.parts[0].startswith("sub-")
     return not is_subject_path or subjects is None or relative.parts[0] in subjects
 
@@ -197,7 +200,12 @@ def deidentify(
     _check_locations(source, output)
     key_note = "supplied by caller, not stored" if key else "random, discarded"
     key = key or secrets.token_bytes(32)
-    chosen = set(subjects) if subjects is not None else None
+    chosen = None
+    if subjects is not None:
+        chosen = {s if s.startswith("sub-") else f"sub-{s}" for s in subjects}
+        unknown = sorted(s for s in chosen if not (source / s).is_dir())
+        if unknown:
+            raise ValueError(f"Not in this dataset: {', '.join(unknown)}")
     counts: Counter = Counter()
     files: Counter = Counter()
     signal_pairs: list[tuple[Path, Path]] = []

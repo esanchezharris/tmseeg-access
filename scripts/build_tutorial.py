@@ -150,9 +150,7 @@ parietal run does not.
 
 The check in step 3 reported a much bigger number for this run, because it measures deviation on
 each channel. Field power only counts differences between channels, so anything every channel shares
-drops out. A large gap between the two means most of the artifact is common to all channels. That
-would fit an artifact in the shared reference electrode, though this tutorial doesn't prove that.
-Average referencing would remove the shared part, and leave what you see here.
+drops out. The two numbers answer different questions, so quote the one you mean.
 
 ## 7. When a run has doubled markers
 

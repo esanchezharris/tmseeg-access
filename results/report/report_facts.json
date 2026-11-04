@@ -4,7 +4,7 @@
   "pulse_markers": 301143,
   "distinct_pulses": 58004,
   "duplicate_markers": 243139,
-  "issues": 208,
+  "issues": 250,
   "runs_with_120_markers": 411,
   "runs_checked_events": 479,
   "runs_checked_against_header": 479,
@@ -13,8 +13,8 @@
   "gap_median_s": 3.023,
   "gaps_total": 57525,
   "gaps_in_published_range": 13,
-  "signal_runs_with_residual_artifact": 18,
-  "signal_runs_at_or_over_1000_uv": 8,
-  "peak_deviation_max_uv": 15983.5,
-  "signal_runs_header_says_interpolated_but_over_1000_uv": 8
+  "signal_runs_with_residual_artifact": 20,
+  "signal_runs_at_or_over_1000_uv": 13,
+  "peak_channel_max_uv": 94308.1,
+  "signal_runs_header_says_interpolated_but_over_1000_uv": 13
 }

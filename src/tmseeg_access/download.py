@@ -24,6 +24,7 @@ from tmseeg_access.config import derivatives_dir
 GRAPHQL_URL = "https://openneuro.org/crn/graphql"
 USER_AGENT = "tmseeg-access"
 CHUNK = 1024 * 1024
+RANGE_NOT_SATISFIABLE = 416
 _ANNEX_KEY = re.compile(r"^(?P<backend>SHA256E?|MD5E?)-s(?P<size>\d+)--(?P<digest>[0-9a-f]+)")
 _QUERY = """query($id: ID!, $tag: String!) {
   snapshot(datasetId: $id, tag: $tag) {
@@ -147,6 +148,8 @@ def verify_file(path: Path, remote: RemoteFile) -> None:
 
 def _stream(remote: RemoteFile, part: Path, timeout: int) -> None:
     offset = part.stat().st_size if part.exists() else 0
+    if offset >= remote.size:
+        return  # already complete, or too long: verification decides which
     headers = {"User-Agent": USER_AGENT}
     if offset:
         headers["Range"] = f"bytes={offset}-"
@@ -169,6 +172,8 @@ def download_one(remote: RemoteFile, root: Path, retries: int = 3, timeout: int 
     for attempt in range(1, retries + 1):
         try:
             _stream(remote, part, timeout)
+            if part.stat().st_size < remote.size:
+                raise ConnectionError(f"{remote.path}: connection ended early")
             verify_file(part, remote)
             part.replace(target)
             return "downloaded"
@@ -176,7 +181,15 @@ def download_one(remote: RemoteFile, root: Path, retries: int = 3, timeout: int 
             part.unlink(missing_ok=True)
             if attempt == retries:
                 raise
-        except OSError:  # includes URLError, timeouts and dropped connections
+        except urllib.error.HTTPError as error:
+            if error.code == RANGE_NOT_SATISFIABLE:
+                part.unlink(missing_ok=True)  # the partial file can't be resumed: start again
+            if attempt == retries:
+                raise
+            time.sleep(attempt)
+        except (
+            OSError
+        ):  # includes URLError, timeouts and dropped connections. Keeps .part to resume
             if attempt == retries:
                 raise
             time.sleep(attempt)

@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import warnings
 from collections.abc import Sequence
 from functools import cached_property, lru_cache
 
@@ -72,6 +73,7 @@ class Dataset:
         for sidecar in sorted(self.root.glob("sub-*/eeg/*_eeg.json")):
             match = _SIDECAR.match(sidecar.name)
             if match is None:
+                warnings.warn(f"Skipping unrecognised recording: {sidecar.name}", stacklevel=2)
                 continue
             stem = sidecar.name.removesuffix("_eeg.json")
             eeg_dir = sidecar.parent
@@ -266,6 +268,7 @@ class Dataset:
         on_duplicate: str = "error",
         duplicate_gap_s: float = DEFAULT_DUPLICATE_GAP_S,
         exclude_channels: Sequence[str] = (),
+        task: str = "tmseeg",
     ) -> mne.Epochs:
         """Cut epochs around each TMS pulse.
 
@@ -282,7 +285,7 @@ class Dataset:
         """
         if on_duplicate not in {"error", "keep_first"}:
             raise ValueError("on_duplicate must be 'error' or 'keep_first'")
-        pulses = self.pulses(subject, acquisition, duplicate_gap_s=duplicate_gap_s)
+        pulses = self.pulses(subject, acquisition, task=task, duplicate_gap_s=duplicate_gap_s)
         duplicates = int(pulses["is_duplicate"].sum())
         if duplicates and on_duplicate == "error":
             raise DuplicatePulseError(
@@ -291,9 +294,7 @@ class Dataset:
                 "Review them, then pass on_duplicate='keep_first' to keep the first of each group."
             )
         kept = pulses.loc[~pulses["is_duplicate"]].reset_index(drop=True)
-        raw = self._open_raw(
-            self._stem(subject, "tmseeg", acquisition), _subject_label(subject), True
-        )
+        raw = self._open_raw(self._stem(subject, task, acquisition), _subject_label(subject), True)
         samples = kept["onset_sample"].to_numpy(dtype=int) + raw.first_samp
         events = np.column_stack(
             [samples, np.zeros(len(samples), dtype=int), np.ones(len(samples), dtype=int)]
@@ -318,7 +319,7 @@ class Dataset:
             epochs.drop_channels(excluded)
         epochs.info["description"] = json.dumps(
             {
-                "source": self._stem(subject, "tmseeg", acquisition),
+                "source": self._stem(subject, task, acquisition),
                 "on_duplicate": on_duplicate,
                 "duplicate_gap_s": duplicate_gap_s,
                 "markers_in_events_tsv": len(pulses),
@@ -351,6 +352,8 @@ def flag_duplicates(pulses: pd.DataFrame, rate: float, gap_s: float) -> pd.DataF
     """Add spacing columns and flag each marker that follows the previous one within ``gap_s``."""
     table = pulses.copy()
     table["gap_from_previous_s"] = table["onset"].diff()
-    table["is_duplicate"] = table["gap_from_previous_s"] < gap_s
+    # A negative gap is an out-of-order marker, not a duplicate: keep_first must not drop it.
+    gaps = table["gap_from_previous_s"]
+    table["is_duplicate"] = (gaps >= 0) & (gaps < gap_s)
     table["onset_sample"] = np.rint(table["onset"] * rate).astype(int)
     return table

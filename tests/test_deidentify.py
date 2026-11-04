@@ -156,6 +156,39 @@ def test_head_geometry_is_kept_unless_dropped(source, tmp_path):
     assert log["fields_changed"]["head_geometry.removed_files"] == 1
 
 
+def test_unfinished_downloads_are_not_copied(source, output):
+    leftover = source / "sub-901/eeg/sub-901_task-tmseeg_acq-parietal_eeg.set.part"
+    leftover.write_text(FAKE_PATH, encoding="utf-8")
+    run(source, output)
+    assert not list(output.rglob("*.part"))
+
+
+def test_subject_labels_work_with_or_without_the_prefix(source, output):
+    run(source, output, subjects=["901"])
+    assert (output / "sub-901").is_dir()
+
+
+def test_unknown_subject_is_an_error_not_an_empty_copy(source, output):
+    with pytest.raises(ValueError, match="sub-999"):
+        run(source, output, subjects=["sub-999"])
+
+
+def test_signal_can_be_left_out(source, output):
+    run(source, output, include_signal=False)
+    assert not list(output.rglob("*.fdt"))
+    assert list(output.rglob("*.set"))
+
+
+def test_free_text_fields_are_blanked_even_without_a_suspicious_pattern(source, output):
+    path = source / "sub-901/eeg/sub-901_task-tmseeg_acq-parietal_eeg.set"
+    content = {k: v for k, v in loadmat(path).items() if not k.startswith("__")}
+    content["comments"] = "Plain note naming a person"
+    savemat(path, content, appendmat=False)
+    run(source, output)
+    copied = (output / "sub-901/eeg/sub-901_task-tmseeg_acq-parietal_eeg.set").read_bytes()
+    assert b"naming a person" not in copied
+
+
 def test_refuses_to_write_inside_the_source(source):
     with pytest.raises(ValueError, match="outside"):
         run(source, source / "derivatives" / "deid")

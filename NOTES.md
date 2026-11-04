@@ -59,33 +59,36 @@ it's a schema expressed as a file system, which is what makes this package possi
 A pulse is a row in `*_task-tmseeg_acq-<site>_events.tsv` with `is_tms_pulse == 1`. The `value` column
 holds the site name. There's no pulse channel or EMG in the release, so markers are the only record.
 
-Checked on sub-001, all 4 sites (`results/pulse_identification.json`):
+Three things were checked:
 
-1. `onset` equals `(EEGLAB latency - 1) / sampling rate`, to within about 6e-14 s.
-2. So `onset` is 0-based seconds, and the `sample` column is EEGLAB's 1-based latency. Using `sample`
-   directly would shift every epoch by 1 ms. The package uses `onset` only.
-3. The signal changes at fixed offsets from the markers, and doesn't when the same analysis is run on
-   markers moved 1 s later (a placebo). So the time base is right.
+1. **Time base, all 479 runs** (`results/hand_checks.json`). Every `onset` equals
+   `(EEGLAB latency - 1) / sampling rate`, to within about 1e-13 s. So `onset` is 0-based seconds, and the
+   `sample` column is EEGLAB's 1-based latency. Using `sample` directly would shift every epoch by 1 ms.
+   The package uses `onset` only.
+2. **Alignment with the signal, sub-001, 4 runs** (`results/pulse_identification.json`). The signal
+   changes at fixed offsets from the markers, and doesn't when the same analysis is run on markers moved
+   1 s later (a placebo).
+3. **A pulse signature in all 40 signal-checked runs**: the rule `signal.no_pulse_signature` never fired.
+   The placebo itself was only run on sub-001.
 
 **What that does and doesn't prove.** Interpolation was applied at the markers, so smoothing there shows
 my timing matches the markers the authors processed. It doesn't show a pulse physically happened at
-each one. In sub-057 parietal, both markers of every 0.100 s pair are interpolated, so the signal can't
-say which, if either, is the real pulse. Only runs with an intact artifact show a pulse directly.
+each one. In sub-057 parietal, both markers of every pair about 0.1 s apart are smoothed, so the signal
+can't say which, if either, is the real pulse. Only runs with an intact artifact show a pulse directly.
 
 ## What the checks found
 
-Scope: event checks and header checks ran on all 479 TMS runs. Signal checks ran on 40 runs from 10
-subjects, **chosen to include known problems, so they aren't a random sample**. There are 208 issues in
-`results/issues.csv`. The report is `results/report/report.html`.
+Scope: event and header checks ran on all 479 TMS runs. Signal checks ran on 40 runs from 10 subjects,
+**chosen to include known problems, so their rates don't apply to the whole dataset**. There are 250
+issues in `results/issues.csv`, from 19 rules. The report is `results/report/report.html`.
 
 **Pulse markers**
-- 243,139 markers sit under 2 ms from the previous one, and none are exactly equal. Equality checks
-  would find nothing, so duplicates are found with a window. The largest gap among the 58 affected runs
-  is 0.2 ms.
+- 243,139 markers sit under 2 ms from the previous one, and none are exactly equal, so duplicates are
+  found with a window. 240,801 of them are in one run, sub-071 prefrontal. The other 57 affected runs
+  hold 2,338. The largest gap flagged in those runs is 0.2 ms.
+- sub-071 prefrontal has 240,923 markers: 11 bursts lasting up to 4.94 s, which could hide real pulses.
 - 19 runs have 240 markers, and 411 of 479 have the planned 120.
-- sub-071 prefrontal has 240,923 markers: 11 bursts of ticks lasting up to 4.94 s, which could hide real
-  pulses (`pulse.marker_burst`).
-- sub-047 prefrontal and sub-057 parietal have 120 marker pairs exactly 0.100 s apart. Unexplained.
+- sub-047 prefrontal and sub-057 parietal have 120 marker pairs 0.0999 s apart. Unexplained.
 - sub-134 parietal has 401 markers in a repeating pattern, and a TRIGGER channel that isn't flat.
 - All 520 gaps between 2 ms and 2.5 s come from 5 runs (`pulse.gap_short`).
 
@@ -93,30 +96,45 @@ subjects, **chosen to include known problems, so they aren't a random sample**. 
 57,525 gaps fall in the published range. One of the two is wrong, or they describe different things. I
 can't tell which, and it needs the authors.
 
-**The pulse artifact is often still in the signal.** 18 of 40 signal-checked runs keep one, and 8 peak at
-1,000 uV or more, up to 15,983.5 uV against about 10 uV in clean runs. By site, 9 of 10 prefrontal runs
-are flagged, 4 premotor, 4 parietal and 1 control. My first impression that this was a frontal problem
-was too simple: sub-019 and sub-147 have huge artifacts at parietal, while sub-019 prefrontal is mild.
+**The pulse artifact is often still in the signal.** 20 of 40 signal-checked runs are flagged, and 13
+reach 1,000 uV or more on at least one measure, up to 94,308.1 uV. By site, 9 of 10 prefrontal runs are
+flagged, then 5 premotor, 4 parietal and 2 control. It isn't only a frontal problem: sub-019 and sub-147
+have large values at parietal.
 
-Two things to be careful about with that number:
-- It's deviation per channel, in the recorded reference (FCz). Field power, which counts only differences
-  between channels, is often far smaller: sub-001 prefrontal is 9,800.6 uV deviation but 300.3 uV field
-  power. So much of the artifact is shared across channels, which would fit an artifact in the reference
-  electrode. That's a hypothesis, not a finding, and sub-019 parietal goes the other way.
-- Average referencing would remove the shared part, so analysts won't see the full figure after it.
+Three measures are saved for each run in `results/pulse_artifact.csv`, because they disagree:
 
-**Headers don't predict the signal.** All 8 runs over 1,000 uV record interpolation in their header. In
-the other direction, sub-125 has no artifact record, yet all four of its runs look interpolated and peak
-under 10 uV. Only the signal tells you.
+| Measure | What it sees | What it misses |
+|---|---|---|
+| Median deviation | Artifacts on most channels | An artifact on a few channels |
+| Peak channel | The worst single averaged channel | A bad electrode looks like an artifact |
+| Field power | Differences between channels | Anything all channels share |
+
+My first version used only median deviation, and an audit found it missed runs: sub-147 control looks
+clean on that measure (19.5 uV) while its F1 channel reaches 14,085.2 uV. A flat TRIGGER channel also
+inflated field power, so it's now left out. Runs with no flag are not spotless: their peak channel has a
+median of 45.0 uV and a maximum of 316.9 uV.
+
+Some of this may be bad electrodes, not pulse artifact: PO4 is the worst channel in three sub-019 runs,
+and F1 in two sub-147 runs. Average referencing doesn't reliably help. It shrinks the worst channel
+1.0 to 14.6 times, depending on the run (`average_reference_effect` in `results/hand_checks.json`).
+
+**Headers don't predict the signal.** All 13 large runs record interpolation in their header, and 10 of
+them show no interpolated samples at all. In the other direction, sub-125 has no artifact record, yet
+all four runs look fully interpolated and none is flagged.
+
+**The stated reference doesn't hold.** Sidecars say FCz, but that channel carries signal in all 40
+signal-checked runs (`signal.reference_channel_active`). The data can't be in that reference as stated.
+Re-reference explicitly before analysis.
 
 **A second processing batch.** 47 runs in 12 subjects share a pattern: no artifact record, mixed-case
-channel names, no TRIGGER channel and no site code (`results/header_provenance.json`). They're every
-mixed-case run in the dataset. One subject sampled from it (sub-125) looked clean. sub-136 isn't in it,
-so that doesn't explain sub-136.
+channel names, no TRIGGER channel and no site code (`results/header_provenance.json`). No other run has
+mixed-case names. The one subject sampled from it, sub-125, looked clean. sub-136 isn't in it, so that
+doesn't explain sub-136.
 
-**Channels.** The 62 versus 63 split is a flat channel called `TRIGGER`, which `channels.tsv` types as EEG
-in 392 runs. MNE loads it as EEG, so it would distort an average reference. Use
-`exclude_channels=("TRIGGER",)`. sub-023 has `FPZ` where other subjects have `FCZ`.
+**Channels.** The 62 versus 63 split is a channel called `TRIGGER`, which `channels.tsv` types as EEG in
+392 runs. MNE loads it as EEG. It was flat in 31 of the 32 signal-checked runs that have it, so it would
+distort an average reference. Use `exclude_channels=("TRIGGER",)`. sub-023 has `FPZ` where other subjects
+have `FCZ`.
 
 **Metadata**
 - No per-subject stimulation dose is published. The preprint reports 94 subjects at 100% and 29 at 120%
@@ -125,19 +143,24 @@ in 392 runs. MNE loads it as EEG, so it would distort an average reference. Use
 - `DatasetType` says `raw`. The preprint says partly preprocessed.
 - 13 of 492 expected TMS runs are absent, across 6 subjects.
 
-**What came back clean.** Site labels agree with original filenames in all 432 runs that have a code, so
-mislabelling is ruled out. Control runs are coded `SHAM` in those filenames. Sampling rates are uniform,
-and sidecars, `channels.tsv`, events and headers agree on all 479 runs. No flat or clipped EEG channels
-turned up in the 40 signal-checked runs. No two recordings are identical files.
+**What came back clean.**
+- Site labels agree with original filenames in all 432 runs that have a code. The other 47 have no code,
+  so they can't be checked this way. Control runs are coded `SHAM` in those filenames.
+- Sampling rates are uniform.
+- Sidecars, `channels.tsv` and headers agree on all 479 runs, and event times match to about 1e-13 s.
+- No flat EEG channels turned up in the 40 signal-checked runs. No channel was clipped either, but that
+  rule looks for 20 identical samples, which is a weak test on downsampled data.
+- No two recordings are identical files.
 
 ## Assumptions
 
 | # | Assumption | Basis | Status |
 |---|---|---|---|
-| A1 | `onset` is the marker's true time | Matches `.set` latency | Checked on sub-001 |
+| A1 | `onset` is the marker's true time | Matches `.set` latency | Checked on all 479 runs |
 | A2 | The time base aligns markers to signal | Placebo-controlled check | Checked on sub-001, 4 sites |
 | A3 | Markers under 2 ms apart are one pulse | Gaps stop at 0.2 ms, then nothing until over 2 ms | Assumption: the analyst must opt in to `keep_first` |
 | A4 | Gaps of 2 ms to 2.5 s are not duplicates | From 5 runs, with patterns I can't explain | Flagged, not resolved |
+| A9 | Deviations are measured in the data as stored | The stated reference doesn't hold | Sizes depend on the true reference, which is unknown |
 | A5 | The `control` run is shoulder stimulation | `datacite.yml`, preprint | A sensory control, though filenames say SHAM |
 | A6 | Each run should have 120 pulses | Preprint, and 411 of 479 runs | Used as the protocol value |
 | A7 | Behaviour summaries are plain column statistics | `behavior.py` | Convenience only, not validated scores |
@@ -147,7 +170,9 @@ turned up in the 40 signal-checked runs. No two recordings are identical files.
 
 - Data lives at `TMSEEG_DATA_ROOT`, outside this repo. On the build machine that's
   `E:\tms-eeg-data\ds008037`.
-- That drive's Windows health status is "Warning", and the cause wasn't investigated, so every file is
-  verified against the release hash. Reruns re-verify: see `results/verify_*.json`.
+- Windows reports that drive as "Warning" and "Full Repair Needed" (`results/drive_status.json`). The
+  cause wasn't investigated, so every file is verified against the release hash. Reruns re-verify: see
+  `results/verify_*.json`.
 - Downloaded: text metadata for all subjects, `.set` headers for all 479 TMS runs, and TMS signal for 10
-  subjects (`results/dataset_facts.json`).
+  subjects (`results/hand_checks.json`, `results/dataset_facts.json`).
+- `scripts/rebuild_evidence.py` regenerates every result and generated doc from the data.

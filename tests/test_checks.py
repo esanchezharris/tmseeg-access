@@ -429,6 +429,66 @@ def test_artifact_says_when_the_header_claims_interpolation():
     assert "header records interpolation" in found[0].observed
 
 
+def test_measurements_land_on_the_exact_offsets():
+    data = realistic_noise()
+    data[:, pulse_samples() + 7] += 4000.0  # all channels, 7 samples after each marker
+    measured = measure(data)
+    assert measured["peak_deviation_at_ms"] == 7
+    assert (measured["rough_from_ms"], measured["rough_to_ms"]) == (6, 8)
+    assert measured["peak_field_power_uv"] < 20  # shared by every channel, so not in field power
+
+
+def test_field_power_sees_what_differs_between_channels():
+    data = realistic_noise()
+    data[:31, pulse_samples() + 7] += 4000.0
+    assert measure(data)["peak_field_power_uv"] > 1500
+
+
+def test_artifact_on_one_channel_is_caught_though_medians_miss_it():
+    data = realistic_noise()
+    data[5, pulse_samples() + 7] -= 9000.0
+    measured = signal.measure_pulse_artifact(
+        data, pulse_samples(), PROTOCOL, [f"E{i}" for i in range(62)]
+    )
+    assert measured["peak_deviation_uv"] < 50
+    assert (measured["peak_channel"], measured["peak_channel_uv"] > 8000) == ("E5", True)
+    found = signal.check_pulse_artifact(measured, PROTOCOL, "sub-1", "rec")
+    assert rules(found) == ["signal.residual_pulse_artifact"]
+    assert found[0].severity == "error"
+    assert found[0].where == "channel E5"
+
+
+def test_active_reference_channel_is_caught_in_any_spelling():
+    found = signal.check_reference_channel(
+        noise(), ["A", "FCZ", "C", "D"], "FCz", PROTOCOL, "s", "r"
+    )
+    assert rules(found) == ["signal.reference_channel_active"]
+
+
+def test_flat_or_absent_reference_channel_passes():
+    data = noise()
+    data[1] = 0.0
+    assert (
+        signal.check_reference_channel(data, ["A", "FCZ", "C", "D"], "FCz", PROTOCOL, "s", "r")
+        == []
+    )
+    assert signal.check_reference_channel(data, NAMES, "FCz", PROTOCOL, "s", "r") == []
+    assert signal.check_reference_channel(data, NAMES, None, PROTOCOL, "s", "r") == []
+
+
+def test_longest_span_picks_the_longest_stretch():
+    assert signal._longest_span(np.array([1, 2, 5, 6, 7, 9])) == (5, 7)
+    assert signal._longest_span(np.array([3])) == (3, 3)
+    assert signal._longest_span(np.array([], dtype=int)) is None
+
+
+def test_no_complete_window_is_reported_rather_than_crashing():
+    measured = signal.measure_pulse_artifact(noise(), np.array([1, 19999]), PROTOCOL)
+    assert measured is None
+    found = signal.check_pulse_artifact(measured, PROTOCOL, "sub-1", "rec")
+    assert rules(found) == ["signal.no_usable_pulses"]
+
+
 def test_a_brief_rough_blip_is_not_an_artifact():
     measured = {
         "rough_from_ms": 12,

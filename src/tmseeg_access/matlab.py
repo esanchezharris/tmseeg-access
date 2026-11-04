@@ -52,13 +52,15 @@ def read_epochs_mat(path: Path) -> dict:
     """Read a ``.mat`` export back into Python. Used to verify the round trip."""
     content = loadmat(path, squeeze_me=True, struct_as_record=False)
     table = content["epochs_table"]
+    channels = [str(name) for name in np.atleast_1d(content["channels"])]
+    times = np.atleast_1d(content["times_s"])
     return {
-        "data_uv": content["data_uv"],
-        "times_s": content["times_s"],
-        "channels": [str(name) for name in content["channels"]],
+        "data_uv": content["data_uv"].reshape(-1, len(channels), len(times)),
+        "times_s": times,
+        "channels": channels,
         "sampling_rate_hz": float(content["sampling_rate_hz"]),
         "provenance": json.loads(content["provenance_json"]),
-        "epochs_table": {name: getattr(table, name) for name in table._fieldnames},
+        "epochs_table": {name: np.atleast_1d(getattr(table, name)) for name in table._fieldnames},
     }
 
 

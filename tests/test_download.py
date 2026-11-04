@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import urllib.error
 
 import pytest
 
@@ -87,6 +88,94 @@ def test_corrupted_local_file_is_caught_on_rerun(tmp_path):
     (root / "a.tsv").write_bytes(b"onset\n2\n")
     with pytest.raises(VerificationError):
         download_one(remote, root)
+
+
+class FakeResponse:
+    """A stand-in for an HTTP response, built from synthetic bytes."""
+
+    def __init__(self, body: bytes, status: int = 200):
+        self.body, self.status, self.position = body, status, 0
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        return False
+
+    def read(self, size: int = -1) -> bytes:
+        chunk = self.body[self.position : self.position + size]
+        self.position += len(chunk)
+        return chunk
+
+
+def remote_with(data: bytes, url: str = "https://example.test/a") -> RemoteFile:
+    return RemoteFile("a.fdt", len(data), "sha256", hashlib.sha256(data).hexdigest(), url)
+
+
+def serve(monkeypatch, *responses):
+    """Make urlopen return these in turn. An exception in the list is raised instead."""
+    queue, seen = list(responses), []
+
+    def fake(request, timeout=None):
+        seen.append(request.headers.get("Range"))
+        item = queue.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return item
+
+    monkeypatch.setattr("urllib.request.urlopen", fake)
+    monkeypatch.setattr("time.sleep", lambda _: None)
+    return seen
+
+
+def test_resume_asks_for_the_rest_and_appends(tmp_path, monkeypatch):
+    data = b"0123456789"
+    (tmp_path / "a.fdt.part").write_bytes(data[:4])
+    seen = serve(monkeypatch, FakeResponse(data[4:], status=206))
+    assert download_one(remote_with(data), tmp_path) == "downloaded"
+    assert (tmp_path / "a.fdt").read_bytes() == data
+    assert seen == ["bytes=4-"]
+
+
+def test_server_ignoring_the_range_restarts_cleanly(tmp_path, monkeypatch):
+    data = b"0123456789"
+    (tmp_path / "a.fdt.part").write_bytes(data[:4])
+    serve(monkeypatch, FakeResponse(data, status=200))
+    download_one(remote_with(data), tmp_path)
+    assert (tmp_path / "a.fdt").read_bytes() == data
+
+
+def test_complete_partial_file_needs_no_request(tmp_path, monkeypatch):
+    data = b"0123456789"
+    (tmp_path / "a.fdt.part").write_bytes(data)
+    seen = serve(monkeypatch)
+    assert download_one(remote_with(data), tmp_path) == "downloaded"
+    assert seen == []
+
+
+def test_dropped_connection_keeps_progress_and_resumes(tmp_path, monkeypatch):
+    data = b"0123456789"
+    seen = serve(monkeypatch, FakeResponse(data[:6]), FakeResponse(data[6:], status=206))
+    assert download_one(remote_with(data), tmp_path) == "downloaded"
+    assert (tmp_path / "a.fdt").read_bytes() == data
+    assert seen == [None, "bytes=6-"]
+
+
+def test_an_incomplete_file_is_never_accepted(tmp_path, monkeypatch):
+    data = b"0123456789"
+    serve(monkeypatch, *[FakeResponse(b"") for _ in range(3)])
+    with pytest.raises(ConnectionError):
+        download_one(remote_with(data), tmp_path)
+    assert not (tmp_path / "a.fdt").exists()
+
+
+def test_range_not_satisfiable_discards_the_partial_file(tmp_path, monkeypatch):
+    data = b"0123456789"
+    (tmp_path / "a.fdt.part").write_bytes(data[:4])
+    refused = urllib.error.HTTPError("u", 416, "Range Not Satisfiable", None, None)
+    seen = serve(monkeypatch, refused, FakeResponse(data))
+    assert download_one(remote_with(data), tmp_path) == "downloaded"
+    assert seen == ["bytes=4-", None]
 
 
 def test_failures_are_reported_not_hidden(tmp_path):

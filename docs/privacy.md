@@ -15,9 +15,9 @@ A dataset can have tidy, anonymised file names and still carry identifying text 
 In this release (`results/header_provenance.json`):
 
 - Absolute file paths appear in the `.set` `filepath` field of 479 of 479 TMS runs.
-- The original file path appears in `comments` in 432 runs, and in `chaninfo` in 432 runs. One of
-  these contains a local username.
-- `history` repeats the path, and original filenames include a study code.
+- The original file path appears in `comments` and in `history` in 432 runs.
+- `chaninfo` holds a path through a user's home folder in 432 runs, which exposes a local username.
+- Original filenames include a study code in 432 runs (`results/hand_checks.json`).
 
 None of this is visible in the BIDS file names. Anyone auditing only the file names would miss it.
 
@@ -40,15 +40,18 @@ command refuses to write inside the source or into a folder that isn't empty.
 With no key, a random one is used and discarded, so shifts can't be reversed. Don't keep a key with
 the data.
 
-**After copying**, it scans every output header and text file again for anything that still looks
-like a path, address or date, and writes `deidentification_log.json`. The log holds counts, never the
-removed values.
+**After copying**, it scans every output `.set`, `.json` and `.tsv` file again for anything that still
+looks like a path, address or date, and writes `deidentification_log.json`. The log holds counts, never
+the removed values. The scan only finds these patterns, so a clean scan doesn't prove a file is free of
+identifying text.
+
+Unfinished downloads (`.part`, `.tmp`) are never copied, because they could carry an unscrubbed header.
 
 ## Verified on real data
 
 Running it on sub-001 (`results/deidentify_demo.json`) changed these fields across the 4 TMS `.set`
 files and left all 4 `.fdt` files identical to the source. No header still held suspicious text
-afterwards, and epochs loaded from the copy matched the original exactly for the two sites compared.
+afterwards, and epochs loaded from the copy matched the original exactly at all 4 sites.
 
 The scan flagged `dataset_description.json`. That's a deliberate kind of false alarm: the match is the
 citation link for the dataset's own paper, which the scan reads as a path. It's reported, not removed,

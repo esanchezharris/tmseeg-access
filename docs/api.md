@@ -38,7 +38,7 @@ Trial-level behavioural data for one task, across all subjects that have it.
 
 One row per subject. See ``tmseeg_access.behavior.SUMMARIES`` for the definitions.
 
-#### `Dataset.epochs_around_pulses(self, subject: "str", acquisition: "str", tmin: "float" = -0.1, tmax: "float" = 0.5, baseline: "tuple[float | None, float | None] | None" = None, on_duplicate: "str" = "error", duplicate_gap_s: "float" = 0.002, exclude_channels: "Sequence[str]" = ()) -> "mne.Epochs"`
+#### `Dataset.epochs_around_pulses(self, subject: "str", acquisition: "str", tmin: "float" = -0.1, tmax: "float" = 0.5, baseline: "tuple[float | None, float | None] | None" = None, on_duplicate: "str" = "error", duplicate_gap_s: "float" = 0.002, exclude_channels: "Sequence[str]" = (), task: "str" = "tmseeg") -> "mne.Epochs"`
 
 Cut epochs around each TMS pulse.
 

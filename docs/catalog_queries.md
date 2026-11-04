@@ -75,10 +75,10 @@ LIMIT 5
 | recording_id                       |   markers |   duplicates |
 |:-----------------------------------|----------:|-------------:|
 | sub-071_task-tmseeg_acq-prefrontal |    240923 |       240801 |
-| sub-136_task-tmseeg_acq-parietal   |       240 |          120 |
-| sub-112_task-tmseeg_acq-control    |       240 |          120 |
-| sub-137_task-tmseeg_acq-parietal   |       240 |          120 |
-| sub-138_task-tmseeg_acq-parietal   |       240 |          120 |
+| sub-137_task-tmseeg_acq-control    |       240 |          120 |
+| sub-139_task-tmseeg_acq-control    |       240 |          120 |
+| sub-137_task-tmseeg_acq-prefrontal |       240 |          120 |
+| sub-139_task-tmseeg_acq-parietal   |       240 |          120 |
 
 ## 4. What is the longest gap between pulses in each of the worst runs?
 
@@ -109,14 +109,14 @@ ORDER BY severity, rule, recording_id
 LIMIT 6
 ```
 
-| rule                           | severity   | recording_id                       | observed                                                                                                                                                               |
-|:-------------------------------|:-----------|:-----------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| pulse.duplicate                | error      | sub-136_task-tmseeg_acq-control    | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                               |
-| pulse.duplicate                | error      | sub-136_task-tmseeg_acq-parietal   | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                               |
-| pulse.duplicate                | error      | sub-136_task-tmseeg_acq-prefrontal | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                               |
-| pulse.duplicate                | error      | sub-136_task-tmseeg_acq-premotor   | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                               |
-| signal.residual_pulse_artifact | error      | sub-136_task-tmseeg_acq-prefrontal | median deviation peaks at 11060.4 uV, 4 ms after the marker; field power peaks at 1488.3 uV; 0 of 7 window samples look interpolated; the header records interpolation |
-| signal.residual_pulse_artifact | warning    | sub-136_task-tmseeg_acq-control    | median deviation peaks at 93.3 uV, 1 ms after the marker; field power peaks at 101.8 uV; 0 of 7 window samples look interpolated; the header records interpolation     |
+| rule                            | severity   | recording_id                       | observed                                                                                                                                                                                                          |
+|:--------------------------------|:-----------|:-----------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| pulse.duplicate                 | error      | sub-136_task-tmseeg_acq-control    | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
+| pulse.duplicate                 | error      | sub-136_task-tmseeg_acq-parietal   | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
+| pulse.duplicate                 | error      | sub-136_task-tmseeg_acq-prefrontal | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
+| pulse.duplicate                 | error      | sub-136_task-tmseeg_acq-premotor   | 120 of 240 markers within 2 ms of the previous one (largest gap 0.10 ms)                                                                                                                                          |
+| signal.residual_pulse_artifact  | error      | sub-136_task-tmseeg_acq-prefrontal | median deviation peaks at 11070.9 uV, 4 ms after the marker; field power peaks at 596.3 uV; largest averaged channel AF7 at 14321.2 uV; 0 of 7 window samples look interpolated; the header records interpolation |
+| signal.reference_channel_active | warning    | sub-136_task-tmseeg_acq-control    | sidecar reference is FCz, but that channel has standard deviation 355.5 uV                                                                                                                                        |
 
 ## 6. How many runs have no error-level issue, by site?
 
@@ -136,10 +136,10 @@ ORDER BY site
 
 | site       |   runs_without_errors |
 |:-----------|----------------------:|
-| control    |                   109 |
+| control    |                   108 |
 | parietal   |                   104 |
-| prefrontal |                   101 |
-| premotor   |                   101 |
+| prefrontal |                    99 |
+| premotor   |                   100 |
 
 ## 7. Which runs can I use for a parietal analysis, with age and n-back accuracy?
 

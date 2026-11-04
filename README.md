@@ -99,6 +99,7 @@ epochs = ds.epochs_around_pulses(
 - **Doubled pulses stop epoching.** Some runs have markers recorded twice. `epochs_around_pulses` refuses
   them until you pass `on_duplicate="keep_first"`, and records that choice.
 - **Exclude `TRIGGER`** from most recordings before average referencing. It's a flat channel typed as EEG.
+- **Re-reference explicitly.** The reference stated in the sidecars doesn't match the data.
 - **Epochs here aren't analysis-ready.** They haven't been through a full TMS-EEG cleaning pipeline.
 
 See [NOTES.md](NOTES.md) for what was found, how a pulse was identified and verified, and a plain-English
@@ -117,6 +118,8 @@ uv run pytest
 
 Tests use small synthetic fixtures. Tests on real data skip unless `TMSEEG_DATA_ROOT` is set. CI runs
 the synthetic tests only.
+
+`scripts/rebuild_evidence.py` regenerates every saved result and generated doc from the data.
 
 ## Limits
 

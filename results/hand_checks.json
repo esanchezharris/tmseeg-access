@@ -1,0 +1,174 @@
+{
+  "marker_pairs_0_1_s": {
+    "sub-047 prefrontal": {
+      "pairs": 120,
+      "gap_min_s": 0.0999,
+      "gap_max_s": 0.0999
+    },
+    "sub-057 parietal": {
+      "pairs": 120,
+      "gap_min_s": 0.0999,
+      "gap_max_s": 0.0999
+    }
+  },
+  "pair_interpolation_sub_057": {
+    "pairs": 120,
+    "roughness_ratio_first_marker": 0.29,
+    "roughness_ratio_second_marker": 0.3,
+    "below_0_8_means_smoothed": true
+  },
+  "duplicate_markers": {
+    "total": 243139,
+    "runs": 58,
+    "largest_run": "sub-071_task-tmseeg_acq-prefrontal",
+    "in_largest_run": 240801,
+    "in_all_other_runs": 2338
+  },
+  "identical_files": {
+    ".fdt": 0,
+    "_events.tsv": 0
+  },
+  "signal_files_gb": [
+    {
+      "local": false,
+      "gb": 103.96
+    },
+    {
+      "local": true,
+      "gb": 3.85
+    }
+  ],
+  "events_against_headers": {
+    "runs": 479,
+    "runs_disagreeing": 0,
+    "largest_difference_s": 1.1368683772161603e-13
+  },
+  "identifying_text_in_headers": {
+    "history_has_path": 432,
+    "chaninfo_has_user_folder": 432,
+    "comments_has_study_code": 432,
+    "runs": 479
+  },
+  "mixed_case_channels_by_task": {
+    "tmseeg": {
+      "runs": 479,
+      "mixed_case": 47
+    },
+    "rest": {
+      "runs": 121,
+      "mixed_case": 0
+    },
+    "workingmemory": {
+      "runs": 117,
+      "mixed_case": 0
+    }
+  },
+  "trigger_channel": {
+    "signal_checked_runs_with_trigger": 32,
+    "flat": 31
+  },
+  "runs_with_no_artifact_flag": {
+    "runs": 20,
+    "peak_channel_uv_median": 45.0,
+    "peak_channel_uv_max": 316.9
+  },
+  "residual_artifact_by_site": {
+    "control": {
+      "error": 1,
+      "warning": 1
+    },
+    "parietal": {
+      "error": 2,
+      "warning": 2
+    },
+    "prefrontal": {
+      "error": 8,
+      "warning": 1
+    },
+    "premotor": {
+      "error": 2,
+      "warning": 3
+    }
+  },
+  "large_runs_with_no_interpolated_samples": 10,
+  "average_reference_effect": [
+    {
+      "recording": "sub-092 prefrontal",
+      "peak_channel_recorded_uv": 7779.8,
+      "peak_channel_average_reference_uv": 533.3,
+      "shrank_by": 14.6
+    },
+    {
+      "recording": "sub-001 prefrontal",
+      "peak_channel_recorded_uv": 10640.8,
+      "peak_channel_average_reference_uv": 1100.4,
+      "shrank_by": 9.7
+    },
+    {
+      "recording": "sub-029 prefrontal",
+      "peak_channel_recorded_uv": 2805.1,
+      "peak_channel_average_reference_uv": 624.2,
+      "shrank_by": 4.5
+    },
+    {
+      "recording": "sub-136 prefrontal",
+      "peak_channel_recorded_uv": 14321.2,
+      "peak_channel_average_reference_uv": 3603.8,
+      "shrank_by": 4.0
+    },
+    {
+      "recording": "sub-147 premotor",
+      "peak_channel_recorded_uv": 2799.1,
+      "peak_channel_average_reference_uv": 1785.3,
+      "shrank_by": 1.6
+    },
+    {
+      "recording": "sub-071 prefrontal",
+      "peak_channel_recorded_uv": 1679.1,
+      "peak_channel_average_reference_uv": 1443.9,
+      "shrank_by": 1.2
+    },
+    {
+      "recording": "sub-147 parietal",
+      "peak_channel_recorded_uv": 17456.1,
+      "peak_channel_average_reference_uv": 16497.8,
+      "shrank_by": 1.1
+    },
+    {
+      "recording": "sub-019 parietal",
+      "peak_channel_recorded_uv": 94308.1,
+      "peak_channel_average_reference_uv": 97298.9,
+      "shrank_by": 1.0
+    },
+    {
+      "recording": "sub-019 prefrontal",
+      "peak_channel_recorded_uv": 8617.4,
+      "peak_channel_average_reference_uv": 8390.6,
+      "shrank_by": 1.0
+    },
+    {
+      "recording": "sub-019 premotor",
+      "peak_channel_recorded_uv": 3973.1,
+      "peak_channel_average_reference_uv": 3906.5,
+      "shrank_by": 1.0
+    },
+    {
+      "recording": "sub-147 control",
+      "peak_channel_recorded_uv": 14085.2,
+      "peak_channel_average_reference_uv": 13856.5,
+      "shrank_by": 1.0
+    },
+    {
+      "recording": "sub-147 prefrontal",
+      "peak_channel_recorded_uv": 14133.5,
+      "peak_channel_average_reference_uv": 13872.3,
+      "shrank_by": 1.0
+    },
+    {
+      "recording": "sub-134 prefrontal",
+      "peak_channel_recorded_uv": 1135.2,
+      "peak_channel_average_reference_uv": 1209.2,
+      "shrank_by": 0.9
+    }
+  ]
+}
